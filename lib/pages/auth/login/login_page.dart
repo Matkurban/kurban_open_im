@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:kurban_open_im/config/app_style.dart';
+import 'package:kurban_open_im/constant/app_resource.dart';
+import 'package:kurban_open_im/extension/context_extension.dart';
 import 'package:kurban_open_im/pages/auth/login/login_logic.dart';
 
 class LoginPage extends GetView<LoginLogic> {
@@ -10,6 +12,7 @@ class LoginPage extends GetView<LoginLogic> {
 
   @override
   Widget build(BuildContext context) {
+    var theme = context.getTheme;
     return Scaffold(
       appBar: AppBar(title: Text("登录")),
       body: SafeArea(
@@ -23,7 +26,12 @@ class LoginPage extends GetView<LoginLogic> {
               crossAxisAlignment: .center,
               children: [
                 Gap(16.h),
-                FlutterLogo(size: 48),
+                Image(
+                  image: AssetImage(AppResource.logo),
+                  width: 96.w,
+                  height: 96.w,
+                  fit: BoxFit.cover,
+                ),
                 Gap(20.h),
                 TextFormField(
                   controller: controller.emailController,
@@ -57,6 +65,22 @@ class LoginPage extends GetView<LoginLogic> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(onPressed: controller.login, child: Text("登录")),
+                ),
+                Gap(8.h),
+                Row(
+                  mainAxisAlignment: .spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        "忘记密码",
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                    TextButton(onPressed: () {}, child: Text("去注册")),
+                  ],
                 ),
               ],
             ),
