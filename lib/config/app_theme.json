@@ -1,0 +1,60 @@
+{
+  "playground_data": "Themes Playground data exported 15.11.2025 01:00:04",
+  "playground_version": "8.3.1",
+  "adaptiveAppBarScrollUnderOffLight": {
+    "dart_type": "enum_adaptive_response",
+    "value": "all"
+  },
+  "appBarCenterTitle": true,
+  "bottomNavigationBarElevation": 0,
+  "defaultRadius": 10,
+  "floatingActionButtonUseShape": true,
+  "inputDecoratorBackgroundAlphaLight": 150,
+  "inputDecoratorFocusedHasBorder": false,
+  "inputDecoratorIsDense": true,
+  "inputDecoratorUnfocusedHasBorder": false,
+  "scaffoldLightIsWhite": true,
+  "schemeIndex": 58,
+  "searchBackgroundSchemeColor": {
+    "dart_type": "enum_scheme_color",
+    "value": "onPrimary"
+  },
+  "searchElevation": 1,
+  "searchIsFullScreen": false,
+  "searchUseGlobalShape": true,
+  "segmentedButtonBorderSchemeColor": {
+    "dart_type": "enum_scheme_color",
+    "value": "transparent"
+  },
+  "segmentedButtonSchemeColor": {
+    "dart_type": "enum_scheme_color",
+    "value": "primary"
+  },
+  "segmentedButtonUnselectedSchemeColor": {
+    "dart_type": "enum_scheme_color",
+    "value": "white"
+  },
+  "simulatorComponentsIndex": 2,
+  "snackBarBackgroundSchemeColor": {
+    "dart_type": "enum_scheme_color",
+    "value": "primary"
+  },
+  "snackBarBorderRadius": 10,
+  "snackBarSchemeColor": {
+    "dart_type": "enum_scheme_color",
+    "value": "onPrimary"
+  },
+  "swapLegacyColorsInM3": false,
+  "swapPrimaryAndSecondaryLightColors": false,
+  "systemNavBarStyle": {
+    "dart_type": "enum_flex_system_navbar_style",
+    "value": "scaffoldBackground"
+  },
+  "topicIndexEndSide": 5,
+  "topicIndexStartSide": 19,
+  "useAppFont": false,
+  "useInputDecoratorThemeInDialogs": false,
+  "useKeyColors": false,
+  "useM3ErrorColors": false,
+  "useSystemNavBarDivider": false
+}

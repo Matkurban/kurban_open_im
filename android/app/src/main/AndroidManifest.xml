@@ -2,6 +2,7 @@
     <application
         android:label="kurban_open_im"
         android:name="${applicationName}"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
