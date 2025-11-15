@@ -6,6 +6,7 @@ import 'package:kurban_open_im/config/app_style.dart';
 import 'package:kurban_open_im/constant/app_resource.dart';
 import 'package:kurban_open_im/extension/context_extension.dart';
 import 'package:kurban_open_im/pages/auth/login/login_logic.dart';
+import 'package:kurban_open_im/router/router_name.dart';
 
 class LoginPage extends GetView<LoginLogic> {
   const LoginPage({super.key});
@@ -22,8 +23,8 @@ class LoginPage extends GetView<LoginLogic> {
           child: Form(
             key: controller.loginFormKey,
             child: Column(
-              mainAxisAlignment: .start,
-              crossAxisAlignment: .center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Gap(16.h),
                 Image(
@@ -33,12 +34,36 @@ class LoginPage extends GetView<LoginLogic> {
                   fit: BoxFit.cover,
                 ),
                 Gap(20.h),
-                TextFormField(
-                  controller: controller.emailController,
-                  validator: controller.emailValidator,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(labelText: "邮箱", hintText: "请输入邮箱"),
-                ),
+                Obx(() {
+                  return SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment(value: 0, label: Text("邮箱登录")),
+                      ButtonSegment(value: 1, label: Text("手机号登录")),
+                    ],
+                    selected: {controller.loginMode.value},
+                    onSelectionChanged: (set) {
+                      controller.loginMode.value = set.first;
+                    },
+                  );
+                }),
+                Gap(12.h),
+                Obx(() {
+                  if (controller.loginMode.value == 0) {
+                    return TextFormField(
+                      controller: controller.emailController,
+                      validator: controller.emailValidator,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(labelText: "邮箱", hintText: "请输入邮箱"),
+                    );
+                  } else {
+                    return TextFormField(
+                      controller: controller.phoneController,
+                      validator: controller.phoneValidator,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(labelText: "手机号", hintText: "请输入手机号"),
+                    );
+                  }
+                }),
                 Gap(20.h),
                 Obx(() {
                   return TextFormField(
@@ -68,7 +93,7 @@ class LoginPage extends GetView<LoginLogic> {
                 ),
                 Gap(8.h),
                 Row(
-                  mainAxisAlignment: .spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () {},
@@ -79,7 +104,12 @@ class LoginPage extends GetView<LoginLogic> {
                         ),
                       ),
                     ),
-                    TextButton(onPressed: () {}, child: Text("去注册")),
+                    TextButton(
+                      onPressed: () {
+                        Get.toNamed(RouterName.register);
+                      },
+                      child: Text("去注册"),
+                    ),
                   ],
                 ),
               ],

@@ -27,6 +27,7 @@ class ImServices extends GetxService {
       OnConversationListener(
         onConversationChanged: AppGlobalEvent.onConversationChanged.add,
         onNewConversation: AppGlobalEvent.onNewConversation.add,
+        onTotalUnreadMessageCountChanged: AppGlobalEvent.onTotalUnreadChanged.add,
         onSyncServerFailed: (reInstall) {
           imSdkStatus(IMSdkStatus.syncFailed, reInstall: reInstall ?? false);
         },
@@ -38,6 +39,46 @@ class ImServices extends GetxService {
         },
         onSyncServerProgress: (progress) {
           imSdkStatus(IMSdkStatus.syncProgress, progress: progress);
+        },
+      ),
+    );
+
+    OpenIM.iMManager.messageManager.setAdvancedMsgListener(
+      OnAdvancedMsgListener(
+        onRecvNewMessage: AppGlobalEvent.onRecvNewMessage.add,
+        onRecvC2CReadReceipt: AppGlobalEvent.onC2CReadReceipt.add,
+      ),
+    );
+
+
+    OpenIM.iMManager.messageManager.setMsgSendProgressListener(
+      OnMsgSendProgressListener(
+        onProgress: (msgID, progress) {
+          AppGlobalEvent.onMsgSendProgress.add((msgID: msgID, progress: progress));
+        },
+      ),
+    );
+
+    
+
+    OpenIM.iMManager.friendshipManager.setFriendshipListener(
+      OnFriendshipListener(
+        onFriendInfoChanged: AppGlobalEvent.onFriendInfoChanged.add,
+        onFriendAdded: AppGlobalEvent.onFriendListAdded.add,
+        onFriendDeleted: AppGlobalEvent.onFriendListDeleted.add,
+      ),
+    );
+
+    OpenIM.iMManager.groupManager.setGroupListener(
+      OnGroupListener(
+        onGroupInfoChanged: (info) {
+          AppGlobalEvent.onGroupInfoChanged.add(info);
+        },
+        onGroupMemberAdded: (member) {
+          AppGlobalEvent.onGroupMemberEnter.add((groupID: member.groupID ?? '', members: [member]));
+        },
+        onGroupMemberDeleted: (member) {
+          AppGlobalEvent.onGroupMemberKicked.add((groupID: member.groupID ?? '', members: [member]));
         },
       ),
     );

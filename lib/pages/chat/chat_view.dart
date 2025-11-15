@@ -13,37 +13,50 @@ class ChatView extends GetView<ChatLogic> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(controller.title), actions: [
-        IconButton(
-          icon: const Icon(Icons.more_vert),
-          onPressed: () {
-            Get.toNamed(
-              RouterName.chatDetail,
-              arguments: {
-                "isGroup": controller.isGroup,
-                "recvID": controller.recvID,
-                "groupID": controller.groupID,
-                "title": controller.title,
-              },
-            );
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {
-            Get.to(() => const MessageSearchPage(), arguments: {"conversationID": controller.conversationID});
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.add_circle_outline),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (ctx) => const SafeArea(child: SizedBox(height: 300, child: SingleChildScrollView(child: Padding(padding: EdgeInsets.all(8), child: ChatActionPanel())))),
-            );
-          },
-        ),
-      ]),
+      appBar: AppBar(
+        title: Text(controller.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              Get.toNamed(
+                RouterName.chatDetail,
+                arguments: {
+                  "isGroup": controller.isGroup,
+                  "recvID": controller.recvID,
+                  "groupID": controller.groupID,
+                  "title": controller.title,
+                },
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Get.to(
+                () => const MessageSearchPage(),
+                arguments: {"conversationID": controller.conversationID},
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (ctx) => const SafeArea(
+                  child: SizedBox(
+                    height: 300,
+                    child: SingleChildScrollView(
+                      child: Padding(padding: EdgeInsets.all(8), child: ChatActionPanel()),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
@@ -63,11 +76,26 @@ class ChatView extends GetView<ChatLogic> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                ListTile(title: const Text('撤回'), onTap: () => Navigator.pop(ctx, 'revoke')),
-                                ListTile(title: const Text('删除本地'), onTap: () => Navigator.pop(ctx, 'delete_local')),
-                                ListTile(title: const Text('转发'), onTap: () => Navigator.pop(ctx, 'forward')),
-                                ListTile(title: const Text('引用'), onTap: () => Navigator.pop(ctx, 'quote')),
-                                ListTile(title: const Text('合并最近消息'), onTap: () => Navigator.pop(ctx, 'merge_recent')),
+                                ListTile(
+                                  title: const Text('撤回'),
+                                  onTap: () => Navigator.pop(ctx, 'revoke'),
+                                ),
+                                ListTile(
+                                  title: const Text('删除本地'),
+                                  onTap: () => Navigator.pop(ctx, 'delete_local'),
+                                ),
+                                ListTile(
+                                  title: const Text('转发'),
+                                  onTap: () => Navigator.pop(ctx, 'forward'),
+                                ),
+                                ListTile(
+                                  title: const Text('引用'),
+                                  onTap: () => Navigator.pop(ctx, 'quote'),
+                                ),
+                                ListTile(
+                                  title: const Text('合并最近消息'),
+                                  onTap: () => Navigator.pop(ctx, 'merge_recent'),
+                                ),
                               ],
                             ),
                           );
@@ -81,15 +109,21 @@ class ChatView extends GetView<ChatLogic> {
                         await controller.forward(msg);
                       } else if (action == 'quote') {
                         final text = await showDialog<String>(
-                          context: context,
+                          context: Get.context!,
                           builder: (_) {
                             final ctrl = TextEditingController();
                             return AlertDialog(
                               title: const Text('输入引用文本'),
                               content: TextField(controller: ctrl),
                               actions: [
-                                TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-                                TextButton(onPressed: () => Navigator.pop(context, ctrl.text.trim()), child: const Text('确定')),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('取消'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, ctrl.text.trim()),
+                                  child: const Text('确定'),
+                                ),
                               ],
                             );
                           },

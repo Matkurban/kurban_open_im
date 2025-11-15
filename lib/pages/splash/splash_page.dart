@@ -15,9 +15,9 @@ class SplashPage extends GetView<SplashLogic> {
       body: SizedBox(
         width: size.width,
         height: size.height,
-        child: Column(
-          mainAxisAlignment: .center,
-          crossAxisAlignment: .center,
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text("OpenIm", style: textTheme.titleLarge?.copyWith(color: theme.primaryColor)),
           ],

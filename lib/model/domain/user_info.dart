@@ -28,7 +28,7 @@ class ISUserInfo extends UserFullInfo with ISuspensionBean {
 
   @override
   String getSuspensionTag() {
-    return tagIndex!;
+    return tagIndex ?? '#';
   }
 
   @override

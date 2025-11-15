@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:kurban_open_im/services/app_global_event.dart';
+import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 
 class MainLogic extends GetxController {
   ///控制页面的切换
@@ -8,10 +10,14 @@ class MainLogic extends GetxController {
   ///当前选中的索引
   final RxInt currentIndex = 0.obs;
 
+  final RxInt totalUnread = 0.obs;
+
   @override
   void onInit() {
     super.onInit();
     mainPageController = PageController();
+    AppGlobalEvent.onTotalUnreadChanged.listen((v) => totalUnread.value = v);
+    _loadTotalUnread();
   }
 
   ///点击bottomNavBar
@@ -28,5 +34,12 @@ class MainLogic extends GetxController {
   void onClose() {
     mainPageController.dispose();
     super.onClose();
+  }
+
+  Future<void> _loadTotalUnread() async {
+    try {
+      final count = await OpenIM.iMManager.conversationManager.getTotalUnreadMsgCount();
+      totalUnread.value = count;
+    } catch (_) {}
   }
 }

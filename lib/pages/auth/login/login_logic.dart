@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:get/get.dart' hide GetStringUtils;
 import 'package:kurban_open_im/constant/constants.dart';
+import 'package:kurban_open_im/model/domain/api_response.dart';
 import 'package:kurban_open_im/model/domain/auth_cache_data.dart';
 import 'package:kurban_open_im/model/domain/user_full_info.dart';
 import 'package:kurban_open_im/repository/app_repository.dart';
@@ -13,6 +14,9 @@ import 'package:kurban_open_im/utils/store_util.dart';
 import 'package:string_validator/string_validator.dart';
 
 class LoginLogic extends GetxController {
+  ///登录模式：0=邮箱，1=手机号
+  final RxInt loginMode = 0.obs;
+
   ///From表单的key
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
@@ -21,6 +25,9 @@ class LoginLogic extends GetxController {
 
   ///密码数据框控制器
   late TextEditingController passwordController;
+
+  ///手机号输入框控制器
+  late TextEditingController phoneController;
 
   ///控制密码是否可见 true为 不可见，false为可见
   final RxBool passwordVisible = true.obs;
@@ -32,6 +39,7 @@ class LoginLogic extends GetxController {
     super.onInit();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    phoneController = TextEditingController();
     passwordVisible.listen(_passwordVisibleListen);
   }
 
@@ -41,6 +49,15 @@ class LoginLogic extends GetxController {
       return null;
     } else {
       return "您输入的邮箱格式有误";
+    }
+  }
+
+  ///校验手机号（简单长度判断，具体规则可按需增强）
+  String? phoneValidator(String? value) {
+    if (value != null && value.isLength(6, 20)) {
+      return null;
+    } else {
+      return "请输入正确的手机号";
     }
   }
 
@@ -72,10 +89,18 @@ class LoginLogic extends GetxController {
     var currentState = loginFormKey.currentState;
     if (currentState != null && currentState.validate()) {
       AppRepository appRepository = AppRepositoryImpl();
-      var apiResponse = await appRepository.login(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      ApiResponse apiResponse;
+      if (loginMode.value == 0) {
+        apiResponse = await appRepository.loginByEmail(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+      } else {
+        apiResponse = await appRepository.loginByPhone(
+          phone: phoneController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+      }
       if (apiResponse.isSuccess) {
         info(apiResponse.toString());
         var authCacheData = AuthCacheData.fromJson(apiResponse.data);
@@ -101,6 +126,9 @@ class LoginLogic extends GetxController {
     if (_passwordVisibleTimer != null) {
       _passwordVisibleTimer!.cancel();
     }
+    emailController.dispose();
+    phoneController.dispose();
+    passwordController.dispose();
     super.onClose();
   }
 }

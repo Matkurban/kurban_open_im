@@ -25,7 +25,7 @@ class ApiResponse {
   }
 
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{"errCode": errCode, "errMsg": errMsg, "errDlt": data, "data": data};
+    return <String, dynamic>{"errCode": errCode, "errMsg": errMsg, "errDlt": errDlt, "data": data};
   }
 
   @override
