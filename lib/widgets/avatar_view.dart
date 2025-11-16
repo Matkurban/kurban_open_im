@@ -27,7 +27,7 @@ class AvatarView extends StatelessWidget {
         decoration: BoxDecoration(color: theme.primaryColor, borderRadius: AppStyle.defaultRadius),
         alignment: Alignment.center,
         child: Text(
-          PinyinHelper.getShortPinyin(name!).split('').first.toLowerCase(),
+          PinyinHelper.getShortPinyin(name!).split('').first.toUpperCase(),
           style: theme.textTheme.titleMedium?.copyWith(color: theme.cardColor),
         ),
       );

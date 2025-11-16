@@ -10,34 +10,18 @@ class ConversationView extends GetView<ConversationLogic> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("消息"),
-        actions: [
-          IconButton(onPressed: () => Get.toNamed('/conversation_manage'), icon: const Icon(Icons.settings)),
-        ],
-      ),
+      appBar: AppBar(title: Text("消息")),
       body: Obx(() {
         return ListView.builder(
           controller: controller.scrollController,
           itemCount: controller.conversationList.length,
           itemBuilder: (BuildContext context, int index) {
             var conversationInfo = controller.conversationList[index];
-            return InkWell(
+            return ConversationListItem(
+              conversation: conversationInfo,
               onTap: () {
-                final isGroup = (conversationInfo.groupID?.isNotEmpty ?? false);
-                final recvID = conversationInfo.userID;
-                final groupID = conversationInfo.groupID;
-                Get.toNamed(
-                  RouterName.chat,
-                  arguments: {
-                    "isGroup": isGroup,
-                    "recvID": recvID,
-                    "groupID": groupID,
-                    "title": conversationInfo.showName,
-                  },
-                );
+                Get.toNamed(RouterName.chat, arguments: conversationInfo);
               },
-              child: ConversationListItem(conversation: conversationInfo),
             );
           },
         );

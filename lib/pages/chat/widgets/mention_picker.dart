@@ -23,8 +23,13 @@ class _MentionPickerState extends State<MentionPicker> {
   }
 
   Future<void> _load() async {
-    if (logic.isGroup && logic.groupID != null) {
-      final list = await OpenIM.iMManager.groupManager.getGroupMemberList(groupID: logic.groupID!, filter: 0, offset: 0, count: 50);
+    if (logic.isGroupChat && logic.groupID != null) {
+      final list = await OpenIM.iMManager.groupManager.getGroupMemberList(
+        groupID: logic.groupID!,
+        filter: 0,
+        offset: 0,
+        count: 50,
+      );
       members.assignAll(list);
     }
   }
@@ -36,9 +41,12 @@ class _MentionPickerState extends State<MentionPicker> {
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
-            child: TextField(controller: _textCtrl, decoration: const InputDecoration(hintText: '输入文本')),
+            child: TextField(
+              controller: _textCtrl,
+              decoration: const InputDecoration(hintText: '输入文本'),
+            ),
           ),
-          if (logic.isGroup)
+          if (logic.isGroupChat)
             Expanded(
               child: Obx(() {
                 return ListView.builder(
@@ -66,13 +74,20 @@ class _MentionPickerState extends State<MentionPicker> {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                Expanded(child: TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消'))),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('取消'),
+                  ),
+                ),
                 Expanded(
                   child: FilledButton(
                     onPressed: () async {
-                      final ids = logic.isGroup ? selected.toList() : (logic.recvID != null ? [logic.recvID!] : <String>[]);
+                      final ids = logic.isGroupChat
+                          ? selected.toList()
+                          : (logic.recvID != null ? [logic.recvID!] : <String>[]);
                       await logic.sendAt(ids, _textCtrl.text.trim());
-                      if (mounted) Navigator.pop(context);
+                      Get.back();
                     },
                     child: const Text('发送 @'),
                   ),

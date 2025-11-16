@@ -4,6 +4,6 @@ import 'package:kurban_open_im/pages/chat/chat_logic.dart';
 class ChatBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => ChatLogic());
+    Get.lazyPut(() => ChatLogic(conversation: Get.arguments));
   }
 }

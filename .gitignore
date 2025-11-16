@@ -34,6 +34,7 @@ migrate_working_dir/
 /coverage/
 lib/config/host.dart
 pubspec.lock
+devtools_options.yaml
 
 # Symbolication related
 app.*.symbols

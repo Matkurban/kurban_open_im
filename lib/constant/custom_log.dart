@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 
+import 'package:kurban_open_im/constant/constants.dart';
+
 const String name = "com.kurban.kurban_open_im";
 
 void info(String message, {Object? error, StackTrace? stackTrace}) {
   developer.log(
-    "IM  Info  ${DateTime.now().millisecondsSinceEpoch} : $message",
+    "IM  info  ${nowTimeString()} : $message",
     name: name,
-    error: jsonEncode(error),
+    error: error != null ? jsonEncode(error) : null,
     stackTrace: stackTrace,
   );
 }

@@ -1,25 +1,38 @@
+import 'package:chat_bottom_container/chat_bottom_container.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:get/get.dart';
+import 'package:kurban_open_im/config/app_config.dart';
 import 'package:kurban_open_im/constant/constants.dart';
+import 'package:kurban_open_im/model/enum/chat_button_type.dart';
+import 'package:kurban_open_im/model/enum/panel_type.dart';
+import 'package:kurban_open_im/utils/app_util.dart';
+import 'package:scrollview_observer/scrollview_observer.dart';
 
 class ChatLogic extends GetxController {
-  ///是否群聊
-  late bool isGroup;
+  final ConversationInfo conversation;
 
-  ///单聊接收方ID
-  String? recvID;
+  ChatLogic({required this.conversation});
+
+  String? get userID => conversation.userID;
 
   ///群聊ID
-  String? groupID;
+  String? get groupID => conversation.groupID;
+
+  bool get isSingleChat => null != userID && userID!.trim().isNotEmpty;
+
+  bool get isGroupChat => null != groupID && groupID!.trim().isNotEmpty;
+
+  ///单聊接收方ID
+  String? get recvID => conversation.userID;
 
   ///会话ID
-  String? conversationID;
+  String get conversationID => conversation.conversationID;
 
   ///页面标题
-  String title = "";
+  String get title => conversation.showName ?? "";
 
   ///消息列表
   final RxList<Message> messages = <Message>[].obs;
@@ -33,89 +46,103 @@ class ChatLogic extends GetxController {
   ///高级消息监听器
   late OnAdvancedMsgListener msgListener;
 
+  ///加载历史记录每次获取的数量
+  final int count = 20;
+
+  final bottomController = ChatBottomPanelContainerController<PanelType>();
+
+  final FocusNode inputFocusNode = FocusNode();
+
+  PanelType currentPanelType = PanelType.none;
+
+  final Rx<ChatButtonType> bottonType = ChatButtonType.tool.obs;
+
+  late ListObserverController chatListObserver;
+
+  late ChatScrollObserver chatScrollObserver;
+
   @override
   void onInit() {
     super.onInit();
     inputController = TextEditingController();
     scrollController = ScrollController();
-    _initArgs();
-    _loadHistory();
-    _listenMessage();
-    scrollController.addListener(_onScroll);
+    chatListObserver = ListObserverController(controller: scrollController)
+      ..cacheJumpIndexOffset = false;
+    chatScrollObserver = ChatScrollObserver(chatListObserver)
+      ..fixedPositionOffset = 5
+      ..onHandlePositionResultCallback = _onHandlePositionResultCallback;
+    scrollController.addListener(_scrollListen);
+    inputController.addListener(_inputListen);
+    _loadMessages();
   }
 
-  void _initArgs() {
-    final args = Get.arguments ?? {};
-    isGroup = args["isGroup"] == true;
-    recvID = args["recvID"];
-    groupID = args["groupID"];
-    title = args["title"] ?? "";
+  ///监听输入框切换发送和更多面板按钮
+  void _inputListen() {
+    var text = inputController.text;
+    if (text.isEmpty) {
+      bottonType.value = ChatButtonType.tool;
+    } else {
+      bottonType.value = ChatButtonType.send;
+    }
+  }
+
+  ///聊天消息位置的处理回调
+  void _onHandlePositionResultCallback(ChatScrollObserverHandlePositionResultModel result) {
+    switch (result.type) {
+      case ChatScrollObserverHandlePositionType.keepPosition:
+        // 保持当前聊天消息位置
+        // updateUnreadMsgCount(changeCount: result.changeCount);
+        break;
+      case ChatScrollObserverHandlePositionType.none:
+        // 对聊天消息位置不做处理
+        // updateUnreadMsgCount(isReset: true);
+        break;
+    }
+  }
+
+  ///监听滑动
+  void _scrollListen() {
+    if (_isTop) {
+      loadMoreHistory();
+    }
+  }
+
+  bool get _isTop {
+    return scrollController.offset >= scrollController.position.maxScrollExtent;
   }
 
   ///加载历史消息
-  Future<void> _loadHistory() async {
+  Future<void> _loadMessages() async {
     try {
-      final sourceID = isGroup ? groupID : recvID;
-      if (sourceID == null) return;
-      conversationID = await OpenIM.iMManager.conversationManager.getConversationIDBySessionType(
-        sourceID: sourceID,
-        sessionType: isGroup ? ConversationType.superGroup : ConversationType.single,
-      );
-      final am = await OpenIM.iMManager.messageManager.getAdvancedHistoryMessageListReverse(
+      var message = await OpenIM.iMManager.messageManager.getAdvancedHistoryMessageList(
         conversationID: conversationID,
         startMsg: null,
-        count: 30,
+        count: count,
       );
-      messages.assignAll(am.messageList ?? []);
-      await _clearUnread();
+      if (message.messageList != null && message.messageList!.isNotEmpty) {
+        messages.assignAll(message.messageList!);
+      }
       _scrollToBottom();
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
   }
 
-  bool _loadingMore = false;
-  Future<void> _loadMoreHistory() async {
-    if (_loadingMore || conversationID == null) return;
-    _loadingMore = true;
-    try {
-      final first = messages.isNotEmpty ? messages.first : null;
-      final res = await OpenIM.iMManager.messageManager.getAdvancedHistoryMessageList(
-        conversationID: conversationID,
-        startMsg: first,
-        count: 20,
-      );
-      final list = res.messageList ?? [];
-      if (list.isNotEmpty) {
-        messages.insertAll(0, list);
-      }
-    } catch (e, s) {
-      error(e.toString(), stackTrace: s);
-    }
-    _loadingMore = false;
-  }
-
-  void _onScroll() {
-    if (!scrollController.hasClients) return;
-    if (scrollController.position.pixels <= 50) {
-      _loadMoreHistory();
-    }
-  }
-
-  ///监听新消息
-  void _listenMessage() {
-    msgListener = OnAdvancedMsgListener(
-      onRecvNewMessage: (msg) {
-        final isCurrent = isGroup
-            ? msg.groupID == groupID
-            : msg.sendID == recvID || msg.recvID == recvID;
-        if (isCurrent) {
-          messages.add(msg);
-          _scrollToBottom();
-        }
-      },
+  ///加载更多消息
+  Future<bool> loadMoreHistory() async {
+    info("加载更多消息");
+    final first = messages.isNotEmpty ? messages.first : null;
+    final res = await OpenIM.iMManager.messageManager.getAdvancedHistoryMessageList(
+      conversationID: conversationID,
+      startMsg: first,
+      count: count,
     );
-    OpenIM.iMManager.messageManager.setAdvancedMsgListener(msgListener);
+    if (res.messageList == null || res.messageList!.isEmpty) {
+      return false;
+    }
+    messages.insertAll(0, res.messageList!);
+    chatScrollObserver.standby(changeCount: res.messageList!.length);
+    return res.isEnd != true;
   }
 
   ///发送文本消息
@@ -124,31 +151,23 @@ class ChatLogic extends GetxController {
     if (content.isEmpty) return;
     try {
       final msg = await OpenIM.iMManager.messageManager.createTextMessage(text: content);
-      final push = OfflinePushInfo();
-      final resp = await OpenIM.iMManager.messageManager.sendMessage(
-        message: msg,
-        userID: isGroup ? null : recvID,
-        groupID: isGroup ? groupID : null,
-        offlinePushInfo: push,
-      );
-      messages.add(resp);
+      _sendMessage(msg);
       inputController.clear();
-      _scrollToBottom();
+      // _scrollToBottom(isAnimate: true);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
   }
 
-  Future<void> _send(Message msg) async {
-    final push = OfflinePushInfo();
+  Future<void> _sendMessage(Message msg) async {
     final resp = await OpenIM.iMManager.messageManager.sendMessage(
       message: msg,
-      userID: isGroup ? null : recvID,
-      groupID: isGroup ? groupID : null,
-      offlinePushInfo: push,
+      userID: isGroupChat ? null : recvID,
+      groupID: isGroupChat ? groupID : null,
+      offlinePushInfo: AppConfig.offlinePushInfo,
     );
     messages.add(resp);
-    _scrollToBottom();
+    chatScrollObserver.standby();
   }
 
   Future<void> sendImage(File file) async {
@@ -156,7 +175,7 @@ class ChatLogic extends GetxController {
       final msg = await OpenIM.iMManager.messageManager.createImageMessageFromFullPath(
         imagePath: file.path,
       );
-      await _send(msg);
+      await _sendMessage(msg);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
@@ -170,7 +189,7 @@ class ChatLogic extends GetxController {
         snapshotPath: file.path,
         videoType: 'mp4',
       );
-      await _send(msg);
+      await _sendMessage(msg);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
@@ -182,7 +201,7 @@ class ChatLogic extends GetxController {
         soundPath: file.path,
         duration: durationSec,
       );
-      await _send(msg);
+      await _sendMessage(msg);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
@@ -194,7 +213,7 @@ class ChatLogic extends GetxController {
         filePath: file.path,
         fileName: file.uri.pathSegments.last,
       );
-      await _send(msg);
+      await _sendMessage(msg);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
@@ -207,7 +226,7 @@ class ChatLogic extends GetxController {
         longitude: longitude,
         latitude: latitude,
       );
-      await _send(msg);
+      await _sendMessage(msg);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
@@ -220,7 +239,7 @@ class ChatLogic extends GetxController {
         extension: "",
         description: "名片",
       );
-      await _send(msg);
+      await _sendMessage(msg);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
@@ -234,7 +253,7 @@ class ChatLogic extends GetxController {
         summaryList: titles,
         messageList: selected,
       );
-      await _send(msg);
+      await _sendMessage(msg);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
@@ -246,105 +265,39 @@ class ChatLogic extends GetxController {
         quoteMsg: origin,
         text: text,
       );
-      await _send(msg);
+      await _sendMessage(msg);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
   }
 
-  Future<void> forward(Message origin) async {
-    try {
-      final msg = await OpenIM.iMManager.messageManager.createForwardMessage(message: origin);
-      await _send(msg);
-    } catch (e, s) {
-      error(e.toString(), stackTrace: s);
-    }
-  }
-
-  
-
-  Future<void> sendCustom(Map<String, dynamic> payload) async {
-    try {
-      final msg = await OpenIM.iMManager.messageManager.createCustomMessage(
-        data: jsonEncode(payload),
-        extension: "",
-        description: "自定义",
-      );
-      await _send(msg);
-    } catch (e, s) {
-      error(e.toString(), stackTrace: s);
-    }
-  }
-
-  Future<void> _clearUnread() async {
-    try {
-      if (conversationID != null) {
-        await OpenIM.iMManager.conversationManager.markConversationMessageAsRead(
-          conversationID: conversationID!,
-        );
-      }
-    } catch (_) {}
-  }
-
-  void _scrollToBottom() {
+  void _scrollToBottom({bool isAnimate = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (scrollController.hasClients) {
-        scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
+        if (isAnimate) {
+          scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.linear,
+          );
+        } else {
+          scrollController.jumpTo(0);
+        }
       }
     });
   }
 
   Future<void> revoke(Message msg) async {
     try {
-      if (conversationID == null || msg.clientMsgID == null) return;
+      if (msg.clientMsgID == null) return;
       await OpenIM.iMManager.messageManager.revokeMessage(
         clientMsgID: msg.clientMsgID!,
-        conversationID: conversationID!,
+        conversationID: conversationID,
       );
       messages.removeWhere((m) => m.clientMsgID == msg.clientMsgID);
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }
-  }
-
-  Future<void> deleteLocal(Message msg) async {
-    try {
-      if (conversationID == null || msg.clientMsgID == null) return;
-      await OpenIM.iMManager.messageManager.deleteMessageFromLocalStorage(
-        clientMsgID: msg.clientMsgID!,
-        conversationID: conversationID!,
-      );
-      messages.removeWhere((m) => m.clientMsgID == msg.clientMsgID);
-    } catch (e, s) {
-      error(e.toString(), stackTrace: s);
-    }
-  }
-
-  void onInputChanged(String text) {
-    try {
-      if (conversationID != null) {
-        OpenIM.iMManager.conversationManager.changeInputStates(
-          conversationID: conversationID!,
-          focus: text.isNotEmpty,
-        );
-      }
-    } catch (_) {}
-  }
-
-  Future<void> deleteOnServer(Message msg) async {
-    // 当前 SDK 版本未提供服务端单条删除接口
-  }
-
-  Future<void> clearLocalAll() async {
-    // 当前 SDK 版本未提供按会话清空本地接口
-  }
-
-  Future<void> clearLocalAndServerAll() async {
-    // 当前 SDK 版本未提供按会话清空本地与服务端接口
   }
 
   Future<void> sendAt(List<String> atUserIDs, String text) async {
@@ -354,45 +307,53 @@ class ChatLogic extends GetxController {
       atUserIDList: atUserIDs,
       quoteMessage: null,
     );
-    await _send(msg);
+    await _sendMessage(msg);
   }
 
-  Future<void> sendEmoji(int index, String data) async {
-    final msg = await OpenIM.iMManager.messageManager.createFaceMessage(index: index, data: data);
-    await _send(msg);
+  Message indexOfMessage(int index, {bool calculate = true}) =>
+      AppUtil.calChatTimeInterval(messages, calculate: calculate).reversed.elementAt(index);
+
+  ///点击录音按钮
+  void onRecordTap() {
+    inputFocusNode.unfocus();
+    bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
   }
 
-  Future<void> insertLocalSingle(Message msg) async {
-    final me = await OpenIM.iMManager.userManager.getSelfUserInfo();
-    final uid = me.userID ?? '';
-    await OpenIM.iMManager.messageManager.insertSingleMessageToLocalStorage(
-      message: msg,
-      receiverID: recvID ?? '',
-      senderID: uid,
-    );
-    messages.add(msg);
+  ///点击表情面板
+  void onEmojiBtnTap() {
+    if (inputFocusNode.hasFocus) {
+      inputFocusNode.unfocus();
+      bottomController.updatePanelType(ChatBottomPanelType.other, data: PanelType.emoji);
+    } else {
+      if (currentPanelType == PanelType.tool || currentPanelType == PanelType.none) {
+        bottomController.updatePanelType(ChatBottomPanelType.other, data: PanelType.emoji);
+      } else {
+        inputFocusNode.requestFocus();
+        bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
+      }
+    }
   }
 
-  Future<void> insertLocalGroup(Message msg) async {
-    final me = await OpenIM.iMManager.userManager.getSelfUserInfo();
-    final uid = me.userID ?? '';
-    await OpenIM.iMManager.messageManager.insertGroupMessageToLocalStorage(
-      message: msg,
-      groupID: groupID ?? '',
-      senderID: uid,
-    );
-    messages.add(msg);
-  }
-
-  Future<void> setLocalEx(Message msg, Map<String, dynamic> ex) async {
-    // 依据 SDK 方法签名调整后再启用
+  ///点击更多面板
+  void onToolBtnTap() {
+    if (inputFocusNode.hasFocus) {
+      inputFocusNode.unfocus();
+      bottomController.updatePanelType(ChatBottomPanelType.other, data: PanelType.tool);
+    } else {
+      if (currentPanelType == PanelType.emoji || currentPanelType == PanelType.none) {
+        bottomController.updatePanelType(ChatBottomPanelType.other, data: PanelType.tool);
+      } else {
+        inputFocusNode.requestFocus();
+        bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
+      }
+    }
   }
 
   @override
   void onClose() {
     inputController.dispose();
+    scrollController.removeListener(_scrollListen);
     scrollController.dispose();
-    // 页面关闭时不再设置高级消息监听（如需移除请在全局服务统一管理）
     super.onClose();
   }
 }

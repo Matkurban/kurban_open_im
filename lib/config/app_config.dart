@@ -1,3 +1,4 @@
+import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:kurban_open_im/config/host.dart';
 import 'package:kurban_open_im/model/enum/environment_type.dart';
 
@@ -33,5 +34,9 @@ sealed class AppConfig {
       case EnvironmentType.prod:
         return "wss://$_prodHost/msg_gateway";
     }
+  }
+
+  static OfflinePushInfo get offlinePushInfo {
+    return OfflinePushInfo(title: "Kurban Open Im", desc: "你收到了一条新消息", iOSBadgeCount: true);
   }
 }
