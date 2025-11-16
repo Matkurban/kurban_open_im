@@ -10,7 +10,7 @@ sealed class AppStyle {
     return EdgeInsets.symmetric(horizontal: 16.w);
   }
 
-  static BorderRadiusGeometry get defaultRadius {
+  static BorderRadius get defaultRadius {
     return BorderRadius.circular(10);
   }
 }

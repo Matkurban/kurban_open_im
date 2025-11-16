@@ -39,6 +39,7 @@ dependencies:
   crypto: ^3.0.7
   lpinyin: ^2.0.3
   intl: any
+  insta_assets_picker: ^3.4.0
 
 dev_dependencies:
   flutter_test:
@@ -51,3 +52,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo/
+    - assets/images/
