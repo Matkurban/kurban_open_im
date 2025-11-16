@@ -6,7 +6,7 @@ import 'package:kurban_open_im/utils/im_emoji_data.dart';
 class ChatBottomEmojiPane extends StatelessWidget {
   const ChatBottomEmojiPane({super.key, this.onEmojiClick});
 
-  final Function(String emoji)? onEmojiClick;
+  final void Function(String emoji)? onEmojiClick;
 
   @override
   Widget build(BuildContext context) {

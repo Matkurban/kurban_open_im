@@ -2,7 +2,6 @@ import 'package:chat_bottom_container/chat_bottom_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:kurban_open_im/extension/context_extension.dart';
 import 'package:kurban_open_im/model/enum/chat_button_type.dart';
 import 'package:kurban_open_im/model/enum/panel_type.dart';
 import 'package:kurban_open_im/pages/chat/chat_logic.dart';
@@ -14,16 +13,10 @@ class ChatInputBar extends GetWidget<ChatLogic> {
 
   @override
   Widget build(BuildContext context) {
-    var viewPadding = context.getViewPadding;
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.only(
-            right: 8.w,
-            left: 8.w,
-            bottom: viewPadding.bottom + 16.h,
-            top: 4.h,
-          ),
+          padding: EdgeInsets.only(right: 8.w, left: 8.w, bottom: 16.h, top: 4.h),
           child: Row(
             crossAxisAlignment: .center,
             children: [
@@ -61,7 +54,11 @@ class ChatInputBar extends GetWidget<ChatLogic> {
             if (type == null) return SizedBox.shrink();
             switch (type) {
               case PanelType.emoji:
-                return ChatBottomEmojiPane();
+                return ChatBottomEmojiPane(
+                  onEmojiClick: (value) {
+                    controller.insertEmoji(value);
+                  },
+                );
               case PanelType.tool:
                 return ChatBottomToolPane();
               default:

@@ -4,11 +4,14 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kurban_open_im/config/app_config.dart';
 import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/enum/chat_button_type.dart';
 import 'package:kurban_open_im/model/enum/panel_type.dart';
 import 'package:kurban_open_im/utils/app_util.dart';
+import 'package:kurban_open_im/utils/file_util.dart';
+import 'package:kurban_open_im/utils/permission_util.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
 class ChatLogic extends GetxController {
@@ -105,6 +108,8 @@ class ChatLogic extends GetxController {
     if (_isTop) {
       loadMoreHistory();
     }
+    inputFocusNode.unfocus();
+    bottomController.updatePanelType(ChatBottomPanelType.none);
   }
 
   bool get _isTop {
@@ -145,20 +150,6 @@ class ChatLogic extends GetxController {
     return res.isEnd != true;
   }
 
-  ///发送文本消息
-  Future<void> sendText() async {
-    final content = inputController.text.trim();
-    if (content.isEmpty) return;
-    try {
-      final msg = await OpenIM.iMManager.messageManager.createTextMessage(text: content);
-      _sendMessage(msg);
-      inputController.clear();
-      // _scrollToBottom(isAnimate: true);
-    } catch (e, s) {
-      error(e.toString(), stackTrace: s);
-    }
-  }
-
   Future<void> _sendMessage(Message msg) async {
     final resp = await OpenIM.iMManager.messageManager.sendMessage(
       message: msg,
@@ -170,7 +161,40 @@ class ChatLogic extends GetxController {
     chatScrollObserver.standby();
   }
 
-  Future<void> sendImage(File file) async {
+  ///发送文本消息
+  Future<void> sendText() async {
+    final content = inputController.text.trim();
+    if (content.isEmpty) return;
+    try {
+      final msg = await OpenIM.iMManager.messageManager.createTextMessage(text: content);
+      _sendMessage(msg);
+      inputController.clear();
+    } catch (e, s) {
+      error(e.toString(), stackTrace: s);
+    }
+  }
+
+  ///选择图片
+  Future<void> selectImage() async {
+    var hasPermission = await PermissionUtil.albumPermission();
+    info("是否有权限：${hasPermission.toString()}");
+    if (hasPermission) {
+      ImagePicker imagePicker = ImagePicker();
+      var result = await imagePicker.pickMultipleMedia(limit: 9);
+      for (var file in result) {
+        var fileType = FileUtil.getFileType(file.path);
+        if (fileType != FileType.none) {
+          if (fileType == FileType.image) {
+            await sendImage(file);
+          } else if (fileType == FileType.video) {
+            await sendVideo(file);
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> sendImage(XFile file) async {
     try {
       final msg = await OpenIM.iMManager.messageManager.createImageMessageFromFullPath(
         imagePath: file.path,
@@ -181,11 +205,12 @@ class ChatLogic extends GetxController {
     }
   }
 
-  Future<void> sendVideo(File file, int durationMs) async {
+  Future<void> sendVideo(XFile file) async {
     try {
+      var duration = await FileUtil.getVideoDurationFromFile(file.path);
       final msg = await OpenIM.iMManager.messageManager.createVideoMessageFromFullPath(
         videoPath: file.path,
-        duration: durationMs,
+        duration: duration,
         snapshotPath: file.path,
         videoType: 'mp4',
       );
@@ -346,6 +371,27 @@ class ChatLogic extends GetxController {
         inputFocusNode.requestFocus();
         bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
       }
+    }
+  }
+
+  void insertEmoji(String emoji) {
+    // 获取当前的光标位置
+    final int selectionStart = inputController.selection.start;
+    final int selectionEnd = inputController.selection.end;
+    // 获取当前文本
+    final String text = inputController.text;
+    if (selectionStart < 0) {
+      // 如果没有焦点或光标位置无效，则简单地追加到末尾
+      inputController.text += emoji;
+    } else {
+      // 在光标位置插入表情
+      final String newText = text.replaceRange(selectionStart, selectionEnd, emoji);
+      // 更新文本
+      inputController.text = newText;
+      // 移动光标到插入的表情之后
+      inputController.selection = TextSelection.fromPosition(
+        TextPosition(offset: selectionStart + emoji.length),
+      );
     }
   }
 

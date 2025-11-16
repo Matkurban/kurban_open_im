@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:kurban_open_im/config/app_style.dart';
 import 'package:kurban_open_im/constant/constants.dart';
+import 'package:kurban_open_im/pages/chat/widgets/image_message.dart';
+import 'package:kurban_open_im/pages/chat/widgets/text_message.dart';
 import 'package:kurban_open_im/widgets/avatar_view.dart';
 
 class MessageItem extends StatelessWidget {
-  const MessageItem({super.key, required this.message, this.onLongPress});
+  const MessageItem({super.key, required this.message});
 
   final Message message;
-  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     final theme = context.getTheme;
     final isMe = message.sendID == userInfo.value.userID;
-    final bgColor = isMe ? theme.primaryColor : theme.cardColor;
+    final bgColor = isMe ? theme.primaryColor : theme.colorScheme.secondary;
     final textColor = isMe ? theme.cardColor : theme.colorScheme.onSurface;
     final Widget avatar = AvatarView(
       url: isMe ? userInfo.value.faceURL : message.senderFaceUrl,
       name: isMe ? userInfo.value.nickname : message.senderNickname,
     );
 
-    final Widget content = Container(
-      constraints: BoxConstraints(maxWidth: 0.7.sw),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-      decoration: BoxDecoration(color: bgColor, borderRadius: AppStyle.defaultRadius),
-      child: _MessageContent(message: message, theme: theme, textColor: textColor),
+    final Widget content = _MessageContent(
+      message: message,
+      theme: theme,
+      textColor: textColor,
+      bgColor: bgColor,
+      isMe: isMe,
     );
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -42,22 +43,27 @@ class MessageItem extends StatelessWidget {
 }
 
 class _MessageContent extends StatelessWidget {
-  const _MessageContent({required this.message, required this.theme, required this.textColor});
+  const _MessageContent({
+    required this.message,
+    required this.theme,
+    required this.textColor,
+    required this.bgColor,
+    required this.isMe,
+  });
 
   final Message message;
   final ThemeData theme;
   final Color textColor;
+  final Color bgColor;
+  final bool isMe;
 
   @override
   Widget build(BuildContext context) {
     switch (message.contentType) {
       case MessageType.text:
-        return Text(
-          message.textElem?.content ?? "",
-          style: theme.textTheme.bodyMedium?.copyWith(color: textColor),
-        );
+        return TextMessage(message: message, theme: theme, textColor: textColor, bgColor: bgColor);
       case MessageType.picture:
-        return Text("[图片]", style: theme.textTheme.bodyMedium?.copyWith(color: textColor));
+        return ImageMessage(message: message, isMe: isMe);
       case MessageType.video:
         return Row(
           mainAxisSize: MainAxisSize.min,

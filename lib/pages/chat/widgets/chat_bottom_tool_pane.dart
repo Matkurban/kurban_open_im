@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:kurban_open_im/config/app_style.dart';
 import 'package:kurban_open_im/constant/constants.dart';
+import 'package:kurban_open_im/pages/chat/chat_logic.dart';
 
-class ChatBottomToolPane extends StatelessWidget {
+class ChatBottomToolPane extends GetWidget<ChatLogic> {
   const ChatBottomToolPane({super.key});
 
   @override
@@ -25,6 +27,7 @@ class ChatBottomToolPane extends StatelessWidget {
             icon: Icons.photo_album,
             labelStyle: theme.textTheme.bodySmall,
             cardColor: theme.colorScheme.tertiaryFixed,
+            onTap: controller.selectImage,
           ),
           ChatBottomToolItem(
             label: "拍摄",
@@ -90,6 +93,7 @@ class ChatBottomToolItem extends StatelessWidget {
       margin: EdgeInsets.zero,
       color: cardColor,
       child: InkWell(
+        onTap: onTap,
         borderRadius: AppStyle.defaultRadius,
         child: Column(
           spacing: 4.h,
