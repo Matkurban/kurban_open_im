@@ -7,7 +7,7 @@ import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/domain/auth_cache_data.dart';
 import 'package:kurban_open_im/model/domain/user_full_info.dart';
 import 'package:kurban_open_im/router/router_name.dart';
-import 'package:kurban_open_im/services/im_services.dart';
+import 'package:kurban_open_im/services/app_services.dart';
 import 'package:kurban_open_im/utils/store_util.dart';
 
 class SplashLogic extends GetxController {
@@ -24,7 +24,7 @@ class SplashLogic extends GetxController {
   }
 
   Future<void> init() async {
-    ImServices imServices = Get.find<ImServices>();
+    AppServices imServices = Get.find<AppServices>();
     bool initialized = await imServices.initImSdk();
     if (initialized) {
       var authCacheData = await StoreUtil.get(CacheKeys.authData);

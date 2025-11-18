@@ -7,7 +7,7 @@ const String name = "com.kurban.kurban_open_im";
 
 void info(String message, {Object? error, StackTrace? stackTrace}) {
   developer.log(
-    "IM  info  ${nowTimeString()} : $message",
+    "info ${nowTimeString()} : $message",
     name: name,
     error: error != null ? jsonEncode(error) : null,
     stackTrace: stackTrace,
@@ -16,18 +16,18 @@ void info(String message, {Object? error, StackTrace? stackTrace}) {
 
 void warn(String message, {Object? error, StackTrace? stackTrace}) {
   developer.log(
-    "IM  Warn  ${DateTime.now().millisecondsSinceEpoch} : $message",
+    "warn ${nowTimeString()} : $message",
     name: name,
-    error: jsonEncode(error),
+    error: error != null ? jsonEncode(error) : null,
     stackTrace: stackTrace,
   );
 }
 
 void error(String message, {Object? error, StackTrace? stackTrace}) {
   developer.log(
-    "IM  Error  ${DateTime.now().millisecondsSinceEpoch} : $message",
+    "error ${nowTimeString()} : $message",
     name: name,
-    error: jsonEncode(error),
+    error: error != null ? jsonEncode(error) : null,
     stackTrace: stackTrace,
   );
 }

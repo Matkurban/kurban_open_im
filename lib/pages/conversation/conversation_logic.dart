@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/enum/im_sdk_status.dart';
-import 'package:kurban_open_im/services/app_global_event.dart';
+import 'package:kurban_open_im/services/app_callback.dart';
 
-class ConversationLogic extends GetxController {
+class ConversationLogic extends GetxController with AppCallback {
   ///会话列表集合
   final RxList<ConversationInfo> conversationList = <ConversationInfo>[].obs;
 
@@ -16,51 +16,25 @@ class ConversationLogic extends GetxController {
   bool reInstall = false;
 
   final ScrollController scrollController = ScrollController();
-  int _offset = 0;
-  final int _count = 30;
-  bool _loading = false;
-  bool _noMore = false;
 
   @override
   void onInit() {
     super.onInit();
     getConversationList();
-    AppGlobalEvent.onConversationChanged.listen(_onConversationChanged);
-    AppGlobalEvent.onNewConversation.listen(_onConversationChanged);
-    AppGlobalEvent.imSdkStatus.listen(_imSdkStatusChanged);
-    scrollController.addListener(_onScroll);
+    onConversationChanged.listen(_onConversationChanged);
+    onNewConversation.listen(_onConversationChanged);
+    imSdkStatus.listen(_imSdkStatusChanged);
   }
 
   ///获取会话集合
   Future<void> getConversationList() async {
-    _offset = 0;
-    _noMore = false;
-    final res = await OpenIM.iMManager.conversationManager.getConversationListSplit(
-      offset: _offset,
-      count: _count,
-    );
+    final res = await OpenIM.iMManager.conversationManager.getAllConversationList();
     conversationList.assignAll(res);
-  }
-
-  Future<void> loadMore() async {
-    if (_loading || _noMore) return;
-    _loading = true;
-    _offset += _count;
-    final res = await OpenIM.iMManager.conversationManager.getConversationListSplit(
-      offset: _offset,
-      count: _count,
-    );
-    if (res.isEmpty) {
-      _noMore = true;
-    } else {
-      conversationList.addAll(res);
-      _sortConversation();
-    }
-    _loading = false;
   }
 
   ///接收到会话更新,接收到新的会话
   void _onConversationChanged(List<ConversationInfo> newList) {
+    info("接收到会话更新,接收到新的会话");
     if (reInstall) {
       conversationList.addAll(newList);
     }
@@ -73,14 +47,6 @@ class ConversationLogic extends GetxController {
 
   void _sortConversation() {
     OpenIM.iMManager.conversationManager.simpleSort(conversationList);
-  }
-
-  void _onScroll() {
-    if (!scrollController.hasClients) return;
-    final position = scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
-      loadMore();
-    }
   }
 
   void _imSdkStatusChanged(({IMSdkStatus status, bool reInstall, int? progress}) value) {

@@ -2,11 +2,11 @@ import 'package:intl/intl.dart';
 
 ///时间戳格式化为时间
 String formatTimeToDate(int time) {
-  return DateFormat("yyyy-MM-dd HH:mm:SS.SSS").format(DateTime.fromMillisecondsSinceEpoch(time));
+  return DateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(DateTime.fromMillisecondsSinceEpoch(time));
 }
 
 String nowTimeString() {
-  return DateFormat("yyyy-MM-dd HH:mm:SS.SSS").format(DateTime.now());
+  return DateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(DateTime.now());
 }
 
 ///把时间戳格式化为今天，昨天，日期这样的时间显示文本

@@ -36,6 +36,9 @@ class LoginPage extends GetView<LoginLogic> {
                 Gap(20.h),
                 Obx(() {
                   return SegmentedButton<int>(
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: theme.inputDecorationTheme.fillColor,
+                    ),
                     segments: const [
                       ButtonSegment(value: 0, label: Text("邮箱登录")),
                       ButtonSegment(value: 1, label: Text("手机号登录")),

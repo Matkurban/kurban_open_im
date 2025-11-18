@@ -9,12 +9,13 @@ import 'package:kurban_open_im/config/app_config.dart';
 import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/enum/chat_button_type.dart';
 import 'package:kurban_open_im/model/enum/panel_type.dart';
+import 'package:kurban_open_im/services/app_callback.dart';
 import 'package:kurban_open_im/utils/app_util.dart';
 import 'package:kurban_open_im/utils/file_util.dart';
 import 'package:kurban_open_im/utils/permission_util.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
-class ChatLogic extends GetxController {
+class ChatLogic extends GetxController with AppCallback {
   final ConversationInfo conversation;
 
   ChatLogic({required this.conversation});
@@ -76,6 +77,7 @@ class ChatLogic extends GetxController {
       ..onHandlePositionResultCallback = _onHandlePositionResultCallback;
     scrollController.addListener(_scrollListen);
     inputController.addListener(_inputListen);
+    onRecvNewMessage.listen(_onRecvNewMessage);
     _loadMessages();
   }
 
@@ -159,6 +161,12 @@ class ChatLogic extends GetxController {
     );
     messages.add(resp);
     chatScrollObserver.standby();
+  }
+
+  ///接收到新的消息
+  void _onRecvNewMessage(Message msg) {
+    info("接收到新的单个消息：${msg.toJson()}");
+    messages.add(msg);
   }
 
   ///发送文本消息

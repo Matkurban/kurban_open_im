@@ -6,6 +6,7 @@ import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kurban_open_im/config/app_style.dart';
 import 'package:kurban_open_im/constant/app_constant_data.dart';
+import 'package:kurban_open_im/widgets/custom_network_image.dart';
 
 class ImageMessage extends StatelessWidget {
   const ImageMessage({super.key, required this.message, required this.isMe});
@@ -49,6 +50,14 @@ class ImageMessage extends StatelessWidget {
         width: trulyWidth,
         height: trulyHeight,
         fit: BoxFit.fitWidth,
+        errorBuilder: (context, url, e) {
+          return CustomNetworkImage(
+            imageUrl: snapshotUrl ?? "",
+            width: trulyWidth,
+            height: trulyHeight,
+            fit: BoxFit.fitWidth,
+          );
+        },
       );
     } else if (snapshotUrl != null && snapshotUrl.isNotEmpty) {
       child = CachedNetworkImage(
