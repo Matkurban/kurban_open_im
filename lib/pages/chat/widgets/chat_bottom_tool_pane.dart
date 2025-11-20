@@ -34,24 +34,28 @@ class ChatBottomToolPane extends GetWidget<ChatLogic> {
             labelStyle: theme.textTheme.bodySmall,
             icon: Icons.camera_alt,
             cardColor: theme.colorScheme.tertiaryFixed,
+            onTap: controller.captureImage,
           ),
           ChatBottomToolItem(
             label: "视频通话",
             labelStyle: theme.textTheme.bodySmall,
             icon: Icons.video_chat,
             cardColor: theme.colorScheme.tertiaryFixed,
+            onTap: controller.startVideoCall,
           ),
           ChatBottomToolItem(
             label: "位置",
             labelStyle: theme.textTheme.bodySmall,
             icon: Icons.location_on,
             cardColor: theme.colorScheme.tertiaryFixed,
+            onTap: controller.selectLocation,
           ),
           ChatBottomToolItem(
             label: "文件",
             labelStyle: theme.textTheme.bodySmall,
             icon: Icons.file_copy,
             cardColor: theme.colorScheme.tertiaryFixed,
+            onTap: controller.selectFile,
           ),
 
           ChatBottomToolItem(
@@ -59,6 +63,7 @@ class ChatBottomToolPane extends GetWidget<ChatLogic> {
             labelStyle: theme.textTheme.bodySmall,
             icon: Icons.person,
             cardColor: theme.colorScheme.tertiaryFixed,
+            onTap: controller.selectCard,
           ),
         ],
       ),

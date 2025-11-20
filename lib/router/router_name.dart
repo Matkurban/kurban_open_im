@@ -15,4 +15,6 @@ sealed class RouterName {
   static String chat = "/chat";
 
   static String profile = "/profile";
+
+  static String conversationDetail = "/conversationDetail";
 }

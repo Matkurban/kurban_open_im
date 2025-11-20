@@ -1,31 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kurban_open_im/pages/conversation/conversation_logic.dart';
-import 'package:kurban_open_im/pages/conversation/widget/conversation_list_item.dart';
-import 'package:kurban_open_im/router/router_name.dart';
+import 'package:kurban_open_im/pages/conversation/widget/conversation_list_content.dart';
+import 'package:kurban_open_im/pages/conversation/widget/conversation_search_bar.dart';
 
 class ConversationView extends GetView<ConversationLogic> {
   const ConversationView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text("消息")),
-      body: Obx(() {
-        return ListView.builder(
-          controller: controller.scrollController,
-          itemCount: controller.conversationList.length,
-          itemBuilder: (BuildContext context, int index) {
-            var conversationInfo = controller.conversationList[index];
-            return ConversationListItem(
-              conversation: conversationInfo,
-              onTap: () {
-                Get.toNamed(RouterName.chat, arguments: conversationInfo);
-              },
+      appBar: AppBar(
+        title: const Text("消息"),
+        actions: [
+          Obx(() {
+            final total = controller.totalUnreadCount.value;
+            if (total <= 0) {
+              return const SizedBox.shrink();
+            }
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Text(
+                  '未读: $total',
+                  style: TextStyle(fontSize: 14.sp, color: theme.colorScheme.primary),
+                ),
+              ),
             );
-          },
-        );
-      }),
+          }),
+        ],
+      ),
+      body: Column(
+        children: [
+          ConversationSearchBar(logic: controller),
+          Expanded(child: ConversationListContent(logic: controller)),
+        ],
+      ),
     );
   }
 }

@@ -1,7 +1,11 @@
-import 'package:chat_bottom_container/chat_bottom_container.dart';
-import 'package:flutter/material.dart';
-import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:chat_bottom_container/chat_bottom_container.dart';
+import 'package:file_picker/file_picker.dart' as file_picker;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,13 +13,15 @@ import 'package:kurban_open_im/config/app_config.dart';
 import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/enum/chat_button_type.dart';
 import 'package:kurban_open_im/model/enum/panel_type.dart';
-import 'package:kurban_open_im/services/app_callback.dart';
+import 'package:kurban_open_im/pages/chat/widgets/chat_card_picker_dialog.dart';
+import 'package:kurban_open_im/pages/chat/widgets/chat_location_picker_dialog.dart';
+import 'package:kurban_open_im/services/app_services.dart';
 import 'package:kurban_open_im/utils/app_util.dart';
 import 'package:kurban_open_im/utils/file_util.dart';
 import 'package:kurban_open_im/utils/permission_util.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 
-class ChatLogic extends GetxController with AppCallback {
+class ChatLogic extends GetxController {
   final ConversationInfo conversation;
 
   ChatLogic({required this.conversation});
@@ -47,9 +53,6 @@ class ChatLogic extends GetxController with AppCallback {
   ///滚动控制器
   late ScrollController scrollController;
 
-  ///高级消息监听器
-  late OnAdvancedMsgListener msgListener;
-
   ///加载历史记录每次获取的数量
   final int count = 20;
 
@@ -65,9 +68,20 @@ class ChatLogic extends GetxController with AppCallback {
 
   late ChatScrollObserver chatScrollObserver;
 
+  late final AppServices _appServices;
+
+  final RxMap<String, int> sendingProgress = <String, int>{}.obs;
+
+  late final StreamSubscription<Message> _newMessageSubscription;
+
+  late final StreamSubscription<String> _messageRevokedSubscription;
+
+  late final StreamSubscription<({String msgID, int progress})> _sendProgressSubscription;
+
   @override
   void onInit() {
     super.onInit();
+    _appServices = Get.find<AppServices>();
     inputController = TextEditingController();
     scrollController = ScrollController();
     chatListObserver = ListObserverController(controller: scrollController)
@@ -77,7 +91,9 @@ class ChatLogic extends GetxController with AppCallback {
       ..onHandlePositionResultCallback = _onHandlePositionResultCallback;
     scrollController.addListener(_scrollListen);
     inputController.addListener(_inputListen);
-    onRecvNewMessage.listen(_onRecvNewMessage);
+    _newMessageSubscription = _appServices.onRecvNewMessage.listen(_onRecvNewMessage);
+    _messageRevokedSubscription = _appServices.onMessageRevoked.listen(_onMessageRevoked);
+    _sendProgressSubscription = _appServices.onMsgSendProgress.listen(_onMsgSendProgress);
     _loadMessages();
   }
 
@@ -153,20 +169,59 @@ class ChatLogic extends GetxController with AppCallback {
   }
 
   Future<void> _sendMessage(Message msg) async {
-    final resp = await OpenIM.iMManager.messageManager.sendMessage(
-      message: msg,
-      userID: isGroupChat ? null : recvID,
-      groupID: isGroupChat ? groupID : null,
-      offlinePushInfo: AppConfig.offlinePushInfo,
-    );
-    messages.add(resp);
-    chatScrollObserver.standby();
+    final id = msg.clientMsgID;
+    if (id != null) {
+      sendingProgress[id] = 0;
+    }
+    try {
+      final resp = await OpenIM.iMManager.messageManager.sendMessage(
+        message: msg,
+        userID: isGroupChat ? null : recvID,
+        groupID: isGroupChat ? groupID : null,
+        offlinePushInfo: AppConfig.offlinePushInfo,
+      );
+      messages.add(resp);
+      chatScrollObserver.standby();
+    } finally {
+      if (id != null) {
+        Future<void>.delayed(const Duration(seconds: 1), () {
+          sendingProgress.remove(id);
+        });
+      }
+    }
   }
 
   ///接收到新的消息
   void _onRecvNewMessage(Message msg) {
-    info("接收到新的单个消息：${msg.toJson()}");
+    if (isGroupChat) {
+      if (msg.groupID != groupID) return;
+    } else {
+      final peerID = userID;
+      if (peerID == null) return;
+      final selfID = userInfo.value.userID;
+      final fromPeer = msg.sendID == peerID && (selfID == null || msg.recvID == selfID);
+      final fromSelf = selfID != null && msg.sendID == selfID && msg.recvID == peerID;
+      if (!fromPeer && !fromSelf) return;
+    }
+    info("接收到新的单个消息：${msg.clientMsgID}");
     messages.add(msg);
+    chatScrollObserver.standby();
+    _scrollToBottom();
+  }
+
+  void _onMessageRevoked(String msgID) {
+    final index = messages.indexWhere((element) => element.clientMsgID == msgID);
+    if (index == -1) return;
+    messages.removeAt(index);
+  }
+
+  void _onMsgSendProgress(({String msgID, int progress}) event) {
+    sendingProgress[event.msgID] = event.progress;
+    if (event.progress >= 100) {
+      Future<void>.delayed(const Duration(seconds: 1), () {
+        sendingProgress.remove(event.msgID);
+      });
+    }
   }
 
   ///发送文本消息
@@ -199,7 +254,75 @@ class ChatLogic extends GetxController with AppCallback {
           }
         }
       }
+      bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
     }
+  }
+
+  Future<void> captureImage() async {
+    final granted = await PermissionUtil.cameraPermission();
+    if (!granted) return;
+    try {
+      final picker = ImagePicker();
+      final result = await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+      if (result != null) {
+        await sendImage(result);
+        bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
+      }
+    } catch (e, s) {
+      error(e.toString(), stackTrace: s);
+    }
+  }
+
+  Future<void> selectFile() async {
+    try {
+      final result = await file_picker.FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: file_picker.FileType.any,
+      );
+      if (result == null) return;
+      for (final file in result.files) {
+        final path = file.path;
+        if (path == null) continue;
+        await sendFile(File(path));
+      }
+      bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
+    } on PlatformException catch (e) {
+      error("选择文件失败：${e.message}");
+    } catch (e, s) {
+      error(e.toString(), stackTrace: s);
+    }
+  }
+
+  Future<void> selectLocation() async {
+    final context = Get.context;
+    if (context == null) return;
+    final result = await ChatLocationPickerDialog.show(context);
+    if (result == null) return;
+    await sendLocation(result.title, result.latitude, result.longitude);
+    bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
+  }
+
+  Future<void> selectCard() async {
+    final context = Get.context;
+    if (context == null) return;
+    final result = await ChatCardPickerDialog.show(context, isGroup: isGroupChat);
+    if (result == null) return;
+    await sendCard(
+      userID: result.userID,
+      groupID: result.groupID,
+      name: result.name,
+      faceURL: result.faceURL,
+    );
+    bottomController.updatePanelType(ChatBottomPanelType.none, data: PanelType.none);
+  }
+
+  void startVideoCall() {
+    final targetID = isGroupChat ? groupID : userID;
+    if (targetID == null) {
+      Get.snackbar("提示", "暂不支持的视频通话类型");
+      return;
+    }
+    Get.snackbar("提示", "视频通话功能开发中");
   }
 
   Future<void> sendImage(XFile file) async {
@@ -265,12 +388,20 @@ class ChatLogic extends GetxController with AppCallback {
     }
   }
 
-  Future<void> sendCard({String? userID, String? groupID}) async {
+  Future<void> sendCard({String? userID, String? groupID, String? name, String? faceURL}) async {
     try {
+      final payload = <String, dynamic>{
+        "type": "card",
+        if (userID != null) "userID": userID,
+        if (groupID != null) "groupID": groupID,
+        if (name != null && name.isNotEmpty) "name": name,
+        if (faceURL != null && faceURL.isNotEmpty) "faceURL": faceURL,
+      };
+      final desc = groupID != null ? "群名片" : "个人名片";
       final msg = await OpenIM.iMManager.messageManager.createCustomMessage(
-        data: jsonEncode({"type": "card", "userID": userID, "groupID": groupID}),
+        data: jsonEncode(payload),
         extension: "",
-        description: "名片",
+        description: desc,
       );
       await _sendMessage(msg);
     } catch (e, s) {
@@ -405,6 +536,9 @@ class ChatLogic extends GetxController with AppCallback {
 
   @override
   void onClose() {
+    _newMessageSubscription.cancel();
+    _messageRevokedSubscription.cancel();
+    _sendProgressSubscription.cancel();
     inputController.dispose();
     scrollController.removeListener(_scrollListen);
     scrollController.dispose();

@@ -47,6 +47,12 @@ class AppServices extends GetxService with AppCallback {
       OnAdvancedMsgListener(
         onRecvNewMessage: onRecvNewMessage.add,
         onRecvC2CReadReceipt: onC2CReadReceipt.add,
+        onNewRecvMessageRevoked: (info) {
+          final id = info.clientMsgID;
+          if (id != null && id.isNotEmpty) {
+            onMessageRevoked.add(id);
+          }
+        },
       ),
     );
 

@@ -5,6 +5,8 @@ import 'package:kurban_open_im/pages/auth/register/register_binding.dart';
 import 'package:kurban_open_im/pages/auth/register/register_page.dart';
 import 'package:kurban_open_im/pages/chat/chat_binding.dart';
 import 'package:kurban_open_im/pages/chat/chat_view.dart';
+import 'package:kurban_open_im/pages/conversation/detail/conversation_detail_binding.dart';
+import 'package:kurban_open_im/pages/conversation/detail/conversation_detail_view.dart';
 import 'package:kurban_open_im/pages/mine/profile_binding.dart';
 import 'package:kurban_open_im/pages/mine/profile_view.dart';
 import 'package:kurban_open_im/pages/main/main_binding.dart';
@@ -21,6 +23,11 @@ sealed class RouterPage {
       GetPage(name: RouterName.login, page: () => LoginPage(), binding: LoginBinding()),
       GetPage(name: RouterName.register, page: () => RegisterPage(), binding: RegisterBinding()),
       GetPage(name: RouterName.chat, page: () => ChatView(), binding: ChatBinding()),
+      GetPage(
+        name: RouterName.conversationDetail,
+        page: () => const ConversationDetailView(),
+        binding: ConversationDetailBinding(),
+      ),
       GetPage(name: RouterName.main, page: () => MainPage(), binding: MainBinding()),
       GetPage(name: RouterName.profile, page: () => const ProfileView(), binding: ProfileBinding()),
     ];
