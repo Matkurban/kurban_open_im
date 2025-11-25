@@ -10,6 +10,7 @@ import 'package:kurban_open_im/model/domain/user_full_info.dart';
 import 'package:kurban_open_im/repository/app_repository.dart';
 import 'package:kurban_open_im/repository/impl/app_repository_impl.dart';
 import 'package:kurban_open_im/router/router_name.dart';
+import 'package:kurban_open_im/services/app_event.dart';
 import 'package:kurban_open_im/utils/store_util.dart';
 import 'package:string_validator/string_validator.dart';
 
@@ -86,6 +87,9 @@ class LoginLogic extends GetxController {
 
   ///登录方法
   Future<void> login() async {
+    AppEvent.messages.add(
+      MessageDataModel(openLoading: true, message: "", type: MessageDataType.loading),
+    );
     var currentState = loginFormKey.currentState;
     if (currentState != null && currentState.validate()) {
       AppRepository appRepository = AppRepositoryImpl();

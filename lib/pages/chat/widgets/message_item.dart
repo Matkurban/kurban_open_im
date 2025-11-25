@@ -5,7 +5,6 @@ import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kurban_open_im/config/app_style.dart';
 import 'package:kurban_open_im/constant/constants.dart';
-import 'package:kurban_open_im/extension/context_extension.dart';
 import 'package:kurban_open_im/pages/chat/widgets/image_message.dart';
 import 'package:kurban_open_im/pages/chat/widgets/text_message.dart';
 import 'package:kurban_open_im/widgets/avatar_view.dart';
@@ -134,7 +133,9 @@ class _MessageBubble extends StatelessWidget {
               SizedBox(height: 4.h),
               Text(
                 '${message.locationElem?.longitude ?? 0}, ${message.locationElem?.latitude ?? 0}',
-                style: theme.textTheme.bodySmall?.copyWith(color: _textColor.withOpacity(0.8)),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: _textColor.withValues(alpha: 0.8),
+                ),
               ),
             ],
           ),
@@ -163,7 +164,9 @@ class _MessageBubble extends StatelessWidget {
                   text,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(color: _textColor.withOpacity(0.9)),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: _textColor.withValues(alpha: 0.9),
+                  ),
                 ),
             ],
           ),
@@ -179,7 +182,9 @@ class _MessageBubble extends StatelessWidget {
                   message.quoteElem!.text!,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(color: _textColor.withOpacity(0.9)),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: _textColor.withValues(alpha: 0.9),
+                  ),
                 ),
               if (message.quoteElem?.text != null) SizedBox(height: 6.h),
               Text(
@@ -216,10 +221,7 @@ class _MessageBubble extends StatelessWidget {
         );
       default:
         return _bubbleWrapper(
-          Text(
-            '[暂不支持的消息类型]',
-            style: theme.textTheme.bodyMedium?.copyWith(color: _textColor),
-          ),
+          Text('[暂不支持的消息类型]', style: theme.textTheme.bodyMedium?.copyWith(color: _textColor)),
         );
     }
   }
@@ -253,8 +255,9 @@ class _CardMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayName =
-        (name != null && name!.isNotEmpty) ? name! : (identifier != null && identifier!.isNotEmpty ? identifier! : '名片');
+    final displayName = (name != null && name!.isNotEmpty)
+        ? name!
+        : (identifier != null && identifier!.isNotEmpty ? identifier! : '名片');
     return Container(
       constraints: BoxConstraints(maxWidth: 0.7.sw),
       padding: EdgeInsets.all(12.w),
@@ -276,7 +279,9 @@ class _CardMessageBubble extends StatelessWidget {
                     identifier!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(color: textColor.withOpacity(0.8)),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: textColor.withValues(alpha: 0.8),
+                    ),
                   ),
               ],
             ),

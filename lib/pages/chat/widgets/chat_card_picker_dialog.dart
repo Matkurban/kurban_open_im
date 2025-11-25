@@ -139,7 +139,7 @@ class _ChatCardPickerDialogState extends State<ChatCardPickerDialog>
     }
     return ListView.separated(
       itemCount: _friends.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, i) => const Divider(height: 1),
       itemBuilder: (_, index) {
         final item = _friends[index];
         final displayName = _friendDisplayName(item);
@@ -158,7 +158,7 @@ class _ChatCardPickerDialogState extends State<ChatCardPickerDialog>
     }
     return ListView.separated(
       itemCount: _groups.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, i) => const Divider(height: 1),
       itemBuilder: (_, index) {
         final item = _groups[index];
         final displayName = _groupDisplayName(item);

@@ -93,7 +93,7 @@ class ConversationLogic extends GetxController with AppCallback {
   Future<void> getTotalUnreadMsgCount() async {
     try {
       final count = await OpenIM.iMManager.conversationManager.getTotalUnreadMsgCount();
-      totalUnreadCount.value = count;
+      totalUnreadCount.value = int.tryParse(count) ?? 0;
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }

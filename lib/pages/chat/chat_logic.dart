@@ -193,6 +193,7 @@ class ChatLogic extends GetxController {
 
   ///接收到新的消息
   void _onRecvNewMessage(Message msg) {
+    info(jsonEncode(msg.toJson()));
     if (isGroupChat) {
       if (msg.groupID != groupID) return;
     } else {

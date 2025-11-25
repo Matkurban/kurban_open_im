@@ -4,7 +4,11 @@ import "package:rxdart_flutter/rxdart_flutter.dart";
 
 mixin AppCallback {
   ///ImSdk状态监听
-  var imSdkStatus = ReplaySubject<({IMSdkStatus status, bool reInstall, int? progress})>();
+  var imSdkStatus = BehaviorSubject<({IMSdkStatus status, bool reInstall, int? progress})>.seeded((
+    status: IMSdkStatus.connectionSucceeded,
+    reInstall: false,
+    progress: null,
+  ));
 
   ///会话更新
   var onConversationChanged = PublishSubject<List<ConversationInfo>>();

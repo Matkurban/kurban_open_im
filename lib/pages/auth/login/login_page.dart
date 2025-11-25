@@ -4,7 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:kurban_open_im/config/app_style.dart';
 import 'package:kurban_open_im/constant/app_resource.dart';
-import 'package:kurban_open_im/extension/context_extension.dart';
+import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/pages/auth/login/login_logic.dart';
 import 'package:kurban_open_im/router/router_name.dart';
 
@@ -14,6 +14,7 @@ class LoginPage extends GetView<LoginLogic> {
   @override
   Widget build(BuildContext context) {
     var theme = context.getTheme;
+    info("Login Build");
     return Scaffold(
       appBar: AppBar(title: Text("登录")),
       body: SafeArea(

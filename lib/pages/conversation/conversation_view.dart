@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:kurban_open_im/pages/conversation/connect_status_widget.dart';
 import 'package:kurban_open_im/pages/conversation/conversation_logic.dart';
 import 'package:kurban_open_im/pages/conversation/widget/conversation_list_content.dart';
 import 'package:kurban_open_im/pages/conversation/widget/conversation_search_bar.dart';
@@ -13,6 +14,7 @@ class ConversationView extends GetView<ConversationLogic> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
+        leading: ConnectStatusWidget(),
         title: const Text("消息"),
         actions: [
           Obx(() {

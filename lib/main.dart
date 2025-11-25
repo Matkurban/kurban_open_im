@@ -7,6 +7,7 @@ import 'package:kurban_open_im/config/app_theme.dart';
 import 'package:kurban_open_im/pages/splash/splash_binding.dart';
 import 'package:kurban_open_im/pages/splash/splash_page.dart';
 import 'package:kurban_open_im/router/router_page.dart';
+import 'package:kurban_open_im/widgets/custom_message_widget.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -15,24 +16,34 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.transparent));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: Size(375, 812),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      child: GetMaterialApp(
-        title: "OpenIm",
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.light,
-        getPages: RouterPage.allPages(),
-        home: SplashPage(),
-        initialBinding: SplashBinding(),
+    return CustomMessageWidget(
+      child: ScreenUtilInit(
+        designSize: Size(375, 812),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        child: GetMaterialApp(
+          title: "OpenIm",
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: ThemeMode.light,
+          getPages: RouterPage.allPages(),
+          home: SplashPage(),
+          initialBinding: SplashBinding(),
+          /*  builder: (context, child) {
+              return Scaffold(body: CustomMessageWidget(child: child ?? SizedBox.shrink()));
+            },*/
+        ),
       ),
     );
   }
