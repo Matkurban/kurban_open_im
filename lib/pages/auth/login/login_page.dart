@@ -35,21 +35,24 @@ class LoginPage extends GetView<LoginLogic> {
                   fit: BoxFit.cover,
                 ),
                 Gap(20.h),
-                Obx(() {
-                  return SegmentedButton<int>(
-                    style: SegmentedButton.styleFrom(
-                      backgroundColor: theme.inputDecorationTheme.fillColor,
-                    ),
-                    segments: const [
-                      ButtonSegment(value: 0, label: Text("邮箱登录")),
-                      ButtonSegment(value: 1, label: Text("手机号登录")),
-                    ],
-                    selected: {controller.loginMode.value},
-                    onSelectionChanged: (set) {
-                      controller.loginMode.value = set.first;
-                    },
-                  );
-                }),
+                SizedBox(
+                  width: double.infinity,
+                  child: Obx(() {
+                    return SegmentedButton<int>(
+                      style: SegmentedButton.styleFrom(
+                        backgroundColor: theme.inputDecorationTheme.fillColor,
+                      ),
+                      segments: const [
+                        ButtonSegment(value: 0, label: Text("邮箱登录")),
+                        ButtonSegment(value: 1, label: Text("手机号登录")),
+                      ],
+                      selected: {controller.loginMode.value},
+                      onSelectionChanged: (set) {
+                        controller.loginMode.value = set.first;
+                      },
+                    );
+                  }),
+                ),
                 Gap(12.h),
                 Obx(() {
                   if (controller.loginMode.value == 0) {

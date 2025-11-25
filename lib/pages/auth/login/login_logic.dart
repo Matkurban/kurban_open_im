@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
+import 'package:flutter_toast_pro/flutter_toast_pro.dart';
 import 'package:get/get.dart' hide GetStringUtils;
 import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/domain/api_response.dart';
@@ -10,7 +11,6 @@ import 'package:kurban_open_im/model/domain/user_full_info.dart';
 import 'package:kurban_open_im/repository/app_repository.dart';
 import 'package:kurban_open_im/repository/impl/app_repository_impl.dart';
 import 'package:kurban_open_im/router/router_name.dart';
-import 'package:kurban_open_im/services/app_event.dart';
 import 'package:kurban_open_im/utils/store_util.dart';
 import 'package:string_validator/string_validator.dart';
 
@@ -87,41 +87,44 @@ class LoginLogic extends GetxController {
 
   ///登录方法
   Future<void> login() async {
-    AppEvent.messages.add(
-      MessageDataModel(openLoading: true, message: "", type: MessageDataType.loading),
-    );
-    var currentState = loginFormKey.currentState;
-    if (currentState != null && currentState.validate()) {
-      AppRepository appRepository = AppRepositoryImpl();
-      ApiResponse apiResponse;
-      if (loginMode.value == 0) {
-        apiResponse = await appRepository.loginByEmail(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-      } else {
-        apiResponse = await appRepository.loginByPhone(
-          phone: phoneController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-      }
-      if (apiResponse.isSuccess) {
-        info(apiResponse.toString());
-        var authCacheData = AuthCacheData.fromJson(apiResponse.data);
-        var user = await OpenIM.iMManager.login(
-          userID: authCacheData.userID,
-          token: authCacheData.imToken,
-        );
-        userInfo.value = UserFullInfo.fromJson(user.toJson());
-        await StoreUtil.set(key: CacheKeys.authData, value: authCacheData.toString());
+    try {
+      var currentState = loginFormKey.currentState;
+      if (currentState != null && currentState.validate()) {
+        AppRepository appRepository = AppRepositoryImpl();
+        FlutterToastPro.showLoading(message: "登录中...");
+        ApiResponse apiResponse;
+        if (loginMode.value == 0) {
+          apiResponse = await appRepository.loginByEmail(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+        } else {
+          apiResponse = await appRepository.loginByPhone(
+            phone: phoneController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+        }
+        if (apiResponse.isSuccess) {
+          info(apiResponse.toString());
+          var authCacheData = AuthCacheData.fromJson(apiResponse.data);
+          var user = await OpenIM.iMManager.login(
+            userID: authCacheData.userID,
+            token: authCacheData.imToken,
+          );
+          userInfo.value = UserFullInfo.fromJson(user.toJson());
+          await StoreUtil.set(key: CacheKeys.authData, value: authCacheData.toString());
 
-        ///跳转到主页面
-        Get.offAllNamed(RouterName.main);
+          ///跳转到主页面
+          Get.offAllNamed(RouterName.main);
+        } else {
+          error(apiResponse.toString());
+        }
       } else {
-        error(apiResponse.toString());
+        warn("loginFormKey.currentState 为空 或者 表单校验不通过");
       }
-    } else {
-      warn("loginFormKey.currentState 为空 或者 表单校验不通过");
+    } catch (e, s) {
+      FlutterToastPro.hideLoading();
+      error(e.toString(), stackTrace: s);
     }
   }
 
