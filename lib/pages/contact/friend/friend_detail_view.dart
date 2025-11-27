@@ -12,7 +12,12 @@ class FriendDetailView extends GetView<FriendDetailLogic> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("好友详情"),
-        actions: [IconButton(onPressed: controller.refreshInfo, icon: const Icon(Icons.refresh))],
+        actions: [
+          IconButton(
+            onPressed: controller.refreshInfo,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
       body: Obx(() {
         final info = controller.info.value;
@@ -64,10 +69,14 @@ class FriendDetailView extends GetView<FriendDetailLogic> {
                 subtitle: Text(info.remark ?? "暂无"),
                 trailing: IconButton(
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => _showRemarkDialog(context, info.remark ?? ""),
+                  onPressed: () =>
+                      _showRemarkDialog(context, info.remark ?? ""),
                 ),
               ),
-              ListTile(title: const Text("更多资料"), subtitle: Text(info.ex ?? "")),
+              ListTile(
+                title: const Text("更多资料"),
+                subtitle: Text(info.ex ?? ""),
+              ),
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.chat_bubble_outline),
@@ -86,7 +95,9 @@ class FriendDetailView extends GetView<FriendDetailLogic> {
               ListTile(
                 leading: const Icon(Icons.delete_outline),
                 title: const Text("删除好友"),
-                onTap: controller.operating.value ? null : controller.deleteFriend,
+                onTap: controller.operating.value
+                    ? null
+                    : controller.deleteFriend,
               ),
             ],
           ),
@@ -106,7 +117,10 @@ class FriendDetailView extends GetView<FriendDetailLogic> {
           decoration: const InputDecoration(labelText: "备注"),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("取消")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("取消"),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
             child: const Text("保存"),

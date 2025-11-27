@@ -23,4 +23,6 @@ sealed class RouterName {
   static String friendApplications = "/friend_applications";
 
   static String friendDetail = "/friend_detail";
+
+  static String friendBlacklist = "/friend_blacklist";
 }

@@ -12,28 +12,41 @@ class FriendListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: AvatarView(
-        url: user.faceURL,
-        name: user.nickname ?? user.userID ?? "",
-      ),
+      leading: AvatarView(url: user.faceURL, name: user.nickname ?? user.userID ?? ""),
       title: Text(user.nickname ?? user.userID ?? ""),
       subtitle: Text(user.remark ?? user.userID ?? ""),
-      trailing: IconButton(
-        icon: const Icon(Icons.info_outline),
-        onPressed: () {
-          Get.toNamed(RouterName.friendDetail, arguments: user);
+      trailing: PopupMenuButton<String>(
+        onSelected: (value) {
+          switch (value) {
+            case 'detail':
+              Get.toNamed(RouterName.friendDetail, arguments: user);
+              break;
+            case 'chat':
+              _openChat();
+              break;
+            case 'black':
+              Get.toNamed(RouterName.friendBlacklist);
+              break;
+          }
         },
+        itemBuilder: (context) => const [
+          PopupMenuItem(value: 'detail', child: Text('查看详情')),
+          PopupMenuItem(value: 'chat', child: Text('发消息')),
+          PopupMenuItem(value: 'black', child: Text('黑名单')),
+        ],
       ),
-      onTap: () {
-        Get.toNamed(
-          RouterName.chat,
-          arguments: {
-            "isGroup": false,
-            "recvID": user.userID,
-            "groupID": null,
-            "title": user.nickname ?? user.userID ?? "",
-          },
-        );
+      onTap: _openChat,
+    );
+  }
+
+  void _openChat() {
+    Get.toNamed(
+      RouterName.chat,
+      arguments: {
+        "isGroup": false,
+        "recvID": user.userID,
+        "groupID": null,
+        "title": user.nickname ?? user.userID ?? "",
       },
     );
   }

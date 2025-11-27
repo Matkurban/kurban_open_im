@@ -13,7 +13,10 @@ class FriendApplicationsView extends GetView<FriendApplicationsLogic> {
       appBar: AppBar(
         title: const Text("好友申请"),
         actions: [
-          IconButton(onPressed: controller.loadApplications, icon: const Icon(Icons.refresh)),
+          IconButton(
+            onPressed: controller.loadApplications,
+            icon: const Icon(Icons.refresh),
+          ),
         ],
       ),
       body: Obx(() {
@@ -27,7 +30,9 @@ class FriendApplicationsView extends GetView<FriendApplicationsLogic> {
                 title: "收到的申请",
                 data: controller.incoming,
                 onAgree: controller.processing.value ? null : controller.accept,
-                onReject: controller.processing.value ? null : controller.refuse,
+                onReject: controller.processing.value
+                    ? null
+                    : controller.refuse,
                 showAction: true,
               ),
             ),

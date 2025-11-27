@@ -44,7 +44,10 @@ class FriendDetailLogic extends GetxController {
     }
     operating.value = true;
     try {
-      await _friendRepository.updateFriendRemark(userID: userID, remark: remark.trim());
+      await _friendRepository.updateFriendRemark(
+        userID: userID,
+        remark: remark.trim(),
+      );
       await refreshInfo();
       Get.snackbar("提示", "备注已更新");
     } catch (e, s) {
@@ -64,8 +67,14 @@ class FriendDetailLogic extends GetxController {
         title: const Text("提示"),
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Get.back(result: false), child: const Text("取消")),
-          FilledButton(onPressed: () => Get.back(result: true), child: const Text("确认")),
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text("取消"),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text("确认"),
+          ),
         ],
       ),
     );
@@ -131,7 +140,12 @@ class FriendDetailLogic extends GetxController {
         : info.value?.nickname ?? userID;
     Get.toNamed(
       RouterName.chat,
-      arguments: {"isGroup": false, "recvID": userID, "groupID": null, "title": title},
+      arguments: {
+        "isGroup": false,
+        "recvID": userID,
+        "groupID": null,
+        "title": title,
+      },
     );
   }
 }

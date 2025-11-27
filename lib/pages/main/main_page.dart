@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kurban_open_im/pages/contact/contact_logic.dart';
 import 'package:kurban_open_im/pages/contact/contact_view.dart';
 import 'package:kurban_open_im/pages/conversation/conversation_view.dart';
 import 'package:kurban_open_im/pages/main/main_logic.dart';
@@ -11,11 +12,16 @@ class MainPage extends GetView<MainLogic> {
 
   @override
   Widget build(BuildContext context) {
+    final contactLogic = Get.find<ContactLogic>();
     return Scaffold(
       body: PageView(
         controller: controller.mainPageController,
         physics: const NeverScrollableScrollPhysics(),
-        children: [const ConversationView(), const ContactView(), const MineView()],
+        children: [
+          const ConversationView(),
+          const ContactView(),
+          const MineView(),
+        ],
       ),
       bottomNavigationBar: Obx(() {
         return BottomNavigationBar(
@@ -30,7 +36,11 @@ class MainPage extends GetView<MainLogic> {
                   Positioned(
                     right: -6,
                     top: -2,
-                    child: Obx(() => UnreadBadge(count: Get.find<MainLogic>().totalUnread.value)),
+                    child: Obx(
+                      () => UnreadBadge(
+                        count: Get.find<MainLogic>().totalUnread.value,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -41,15 +51,47 @@ class MainPage extends GetView<MainLogic> {
                   Positioned(
                     right: -6,
                     top: -2,
-                    child: Obx(() => UnreadBadge(count: Get.find<MainLogic>().totalUnread.value)),
+                    child: Obx(
+                      () => UnreadBadge(
+                        count: Get.find<MainLogic>().totalUnread.value,
+                      ),
+                    ),
                   ),
                 ],
               ),
               label: "首页",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.contacts_outlined),
-              activeIcon: Icon(Icons.contacts),
+              icon: Obx(() {
+                final pending = contactLogic.pendingFriendCount.value;
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.contacts_outlined),
+                    if (pending > 0)
+                      Positioned(
+                        right: -6,
+                        top: -2,
+                        child: UnreadBadge(count: pending),
+                      ),
+                  ],
+                );
+              }),
+              activeIcon: Obx(() {
+                final pending = contactLogic.pendingFriendCount.value;
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.contacts),
+                    if (pending > 0)
+                      Positioned(
+                        right: -6,
+                        top: -2,
+                        child: UnreadBadge(count: pending),
+                      ),
+                  ],
+                );
+              }),
               label: "好友",
             ),
             BottomNavigationBarItem(

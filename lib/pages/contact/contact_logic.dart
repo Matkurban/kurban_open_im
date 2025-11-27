@@ -16,6 +16,11 @@ class ContactLogic extends GetxController {
   ///群组列表
   final RxList<GroupInfo> groups = <GroupInfo>[].obs;
 
+  ///待处理好友申请数量
+  final RxInt pendingFriendCount = 0.obs;
+
+  bool _pendingInitialized = false;
+
   @override
   void onInit() {
     super.onInit();
@@ -25,6 +30,7 @@ class ContactLogic extends GetxController {
       AppGlobalEvent.onFriendInfoChanged.listen(_onFriendInfoChanged),
       AppGlobalEvent.onBlacklistAdded.listen((_) => loadFriends()),
       AppGlobalEvent.onBlacklistDeleted.listen((_) => loadFriends()),
+      AppGlobalEvent.onFriendApplicationChanged.listen((_) => loadPendingFriendCount()),
     ]);
   }
 
@@ -33,6 +39,7 @@ class ContactLogic extends GetxController {
     super.onReady();
     await loadFriends();
     await loadGroups();
+    await loadPendingFriendCount();
   }
 
   @override
@@ -44,9 +51,7 @@ class ContactLogic extends GetxController {
   }
 
   void _onFriendInfoChanged(FriendInfo info) {
-    final index = friends.indexWhere(
-      (element) => element.userID == info.userID,
-    );
+    final index = friends.indexWhere((element) => element.userID == info.userID);
     if (index == -1) return;
     friends[index] = info;
   }
@@ -63,15 +68,26 @@ class ContactLogic extends GetxController {
 
   Future<void> loadFriendsPage(int offset, int count) async {
     try {
-      final list = await _friendRepo.getFriendListPage(
-        offset: offset,
-        count: count,
-      );
+      final list = await _friendRepo.getFriendListPage(offset: offset, count: count);
       if (offset == 0) {
         friends.assignAll(list);
       } else {
         friends.addAll(list);
       }
+    } catch (e, s) {
+      error(e.toString(), stackTrace: s);
+    }
+  }
+
+  Future<void> loadPendingFriendCount() async {
+    try {
+      final count = await _friendRepo.getUnhandledApplicationCount();
+      final previous = pendingFriendCount.value;
+      pendingFriendCount.value = count;
+      if (_pendingInitialized && count > previous) {
+        Get.snackbar("提示", "有新的好友申请");
+      }
+      _pendingInitialized = true;
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:get/get.dart';
 import 'package:kurban_open_im/constant/constants.dart';
+import 'package:kurban_open_im/pages/contact/contact_logic.dart';
 import 'package:kurban_open_im/repository/friend_repository.dart';
 import 'package:kurban_open_im/services/app_global_event.dart';
 
@@ -21,9 +22,7 @@ class FriendApplicationsLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _appChangedSub = AppGlobalEvent.onFriendApplicationChanged.listen(
-      (_) => loadApplications(),
-    );
+    _appChangedSub = AppGlobalEvent.onFriendApplicationChanged.listen((_) => loadApplications());
   }
 
   @override
@@ -42,15 +41,13 @@ class FriendApplicationsLogic extends GetxController {
     loading.value = true;
     try {
       final results = await Future.wait([
-        _friendRepository.getIncomingApplications(
-          handleResults: const [0],
-          offset: 0,
-          count: 100,
-        ),
+        _friendRepository.getIncomingApplications(handleResults: const [0], offset: 0, count: 100),
         _friendRepository.getOutgoingApplications(offset: 0, count: 100),
       ]);
       incoming.assignAll(results[0]);
       outgoing.assignAll(results[1]);
+      final pending = await _friendRepository.getUnhandledApplicationCount();
+      Get.find<ContactLogic>().pendingFriendCount.value = pending;
     } catch (e, s) {
       error(e.toString(), stackTrace: s);
     } finally {

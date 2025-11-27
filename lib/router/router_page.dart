@@ -8,6 +8,8 @@ import 'package:kurban_open_im/pages/chat/chat_binding.dart';
 import 'package:kurban_open_im/pages/chat/chat_view.dart';
 import 'package:kurban_open_im/pages/contact/friend/friend_applications_logic.dart';
 import 'package:kurban_open_im/pages/contact/friend/friend_applications_view.dart';
+import 'package:kurban_open_im/pages/contact/friend/friend_blacklist_logic.dart';
+import 'package:kurban_open_im/pages/contact/friend/friend_blacklist_view.dart';
 import 'package:kurban_open_im/pages/contact/friend/friend_detail_logic.dart';
 import 'package:kurban_open_im/pages/contact/friend/friend_detail_view.dart';
 import 'package:kurban_open_im/pages/contact/friend/friend_search_binding.dart';
@@ -54,6 +56,11 @@ sealed class RouterPage {
           final arg = Get.arguments as FriendInfo;
           Get.lazyPut(() => FriendDetailLogic(friend: arg));
         }),
+      ),
+      GetPage(
+        name: RouterName.friendBlacklist,
+        page: () => const FriendBlacklistView(),
+        binding: BindingsBuilder(() => Get.lazyPut(() => FriendBlacklistLogic())),
       ),
     ];
   }
