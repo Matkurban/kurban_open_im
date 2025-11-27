@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:get/get.dart';
 import 'package:kurban_open_im/constant/constants.dart';
-import 'package:kurban_open_im/services/app_callback.dart';
-import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
+import 'package:kurban_open_im/services/app_global_event.dart';
 
-class MainLogic extends GetxController with AppCallback {
+class MainLogic extends GetxController {
   ///控制页面的切换
   late PageController mainPageController;
 
@@ -17,7 +17,7 @@ class MainLogic extends GetxController with AppCallback {
   void onInit() {
     super.onInit();
     mainPageController = PageController();
-    onTotalUnreadChanged.listen((v) {
+    AppGlobalEvent.onTotalUnreadChanged.listen((v) {
       info("未读消息数量:$v");
       totalUnread.value = v;
     });

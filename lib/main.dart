@@ -8,10 +8,12 @@ import 'package:kurban_open_im/config/app_theme.dart';
 import 'package:kurban_open_im/pages/splash/splash_binding.dart';
 import 'package:kurban_open_im/pages/splash/splash_page.dart';
 import 'package:kurban_open_im/router/router_page.dart';
+import 'package:kurban_open_im/utils/store_util.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  StoreUtil.init();
   runApp(const MyApp());
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.transparent));
 }

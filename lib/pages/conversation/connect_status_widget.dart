@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/enum/im_sdk_status.dart';
-import 'package:kurban_open_im/services/app_callback.dart';
+import 'package:kurban_open_im/services/app_global_event.dart';
 import 'package:rxdart_flutter/rxdart_flutter.dart';
 
 class ConnectStatusWidget extends StatefulWidget {
@@ -13,7 +13,7 @@ class ConnectStatusWidget extends StatefulWidget {
   State<ConnectStatusWidget> createState() => _ConnectStatusWidgetState();
 }
 
-class _ConnectStatusWidgetState extends State<ConnectStatusWidget> with AppCallback {
+class _ConnectStatusWidgetState extends State<ConnectStatusWidget> {
   @override
   Widget build(BuildContext context) {
     var theme = context.getTheme;
@@ -22,7 +22,7 @@ class _ConnectStatusWidgetState extends State<ConnectStatusWidget> with AppCallb
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
           child: ValueStreamBuilder(
-            stream: imSdkStatus,
+            stream: AppGlobalEvent.imSdkStatus,
             builder:
                 (
                   BuildContext context,

@@ -1,11 +1,11 @@
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
+import 'package:get/get.dart';
 import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/enum/im_sdk_status.dart';
-import 'package:kurban_open_im/services/app_callback.dart';
+import 'package:kurban_open_im/services/app_global_event.dart';
 
-class ConversationLogic extends GetxController with AppCallback {
+class ConversationLogic extends GetxController {
   ///会话列表集合
   final RxList<ConversationInfo> conversationList = <ConversationInfo>[].obs;
 
@@ -40,10 +40,10 @@ class ConversationLogic extends GetxController with AppCallback {
     super.onInit();
     getConversationList();
     getTotalUnreadMsgCount();
-    onConversationChanged.listen(_onConversationChanged);
-    onNewConversation.listen(_onConversationChanged);
-    onTotalUnreadChanged.listen(_onTotalUnreadMsgCountChanged);
-    imSdkStatus.listen(_imSdkStatusChanged);
+    AppGlobalEvent.onConversationChanged.listen(_onConversationChanged);
+    AppGlobalEvent.onNewConversation.listen(_onConversationChanged);
+    AppGlobalEvent.onTotalUnreadChanged.listen(_onTotalUnreadMsgCountChanged);
+    AppGlobalEvent.imSdkStatus.listen(_imSdkStatusChanged);
   }
 
   ///获取会话集合

@@ -88,6 +88,7 @@ class LoginLogic extends GetxController {
   ///登录方法
   Future<void> login() async {
     try {
+      FocusScope.of(Get.context!).unfocus();
       var currentState = loginFormKey.currentState;
       if (currentState != null && currentState.validate()) {
         AppRepository appRepository = AppRepositoryImpl();
@@ -118,13 +119,19 @@ class LoginLogic extends GetxController {
           Get.offAllNamed(RouterName.main);
         } else {
           error(apiResponse.toString());
+          if (apiResponse.errCode == 20002) {
+            FlutterToastPro.showWaringMessage("账号未注册");
+          } else {
+            FlutterToastPro.showWaringMessage(apiResponse.errMsg);
+          }
         }
       } else {
         warn("loginFormKey.currentState 为空 或者 表单校验不通过");
       }
     } catch (e, s) {
-      FlutterToastPro.hideLoading();
       error(e.toString(), stackTrace: s);
+    } finally {
+      FlutterToastPro.hideLoading();
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:kurban_open_im/config/app_config.dart';
 import 'package:kurban_open_im/network/interceptor/auth_interceptor.dart';
 import 'package:kurban_open_im/network/interceptor/loading_interceptor.dart';
+import 'package:talker_dio_logger/talker_dio_logger.dart';
 
 class HttpClient {
   static late Dio dio;
@@ -24,7 +25,16 @@ class HttpClient {
         responseType: ResponseType.json,
       ),
     );
-    dio.interceptors.addAll([AuthInterceptor()]);
+    dio.interceptors.addAll([
+      AuthInterceptor(),
+      TalkerDioLogger(
+        settings: const TalkerDioLoggerSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: true,
+          printResponseMessage: true,
+        ),
+      ),
+    ]);
     return dio;
   }
 

@@ -1,9 +1,8 @@
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
 import 'package:get/get.dart';
 import 'package:kurban_open_im/constant/constants.dart';
-import 'package:kurban_open_im/services/app_callback.dart';
 
-class ConversationDetailLogic extends GetxController with AppCallback {
+class ConversationDetailLogic extends GetxController {
   ConversationDetailLogic({required this.conversation});
 
   final ConversationInfo conversation;

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_openim_sdk/flutter_openim_sdk.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide GetStringUtils;
 import 'package:kurban_open_im/constant/constants.dart';
 import 'package:kurban_open_im/model/domain/auth_cache_data.dart';
 import 'package:kurban_open_im/model/domain/user_full_info.dart';
+import 'package:kurban_open_im/model/enum/account_type.dart';
 import 'package:kurban_open_im/repository/impl/app_repository_impl.dart';
 import 'package:kurban_open_im/router/router_name.dart';
 import 'package:kurban_open_im/utils/store_util.dart';
@@ -16,7 +17,9 @@ class RegisterLogic extends GetxController {
   final RxInt currentIndex = 0.obs;
 
   ///账号类型：email / phone
-  final RxString accountType = "email".obs;
+  final Rx<AccountType> accountType = AccountType.email.obs;
+  final RxInt gender = 1.obs;
+  final Rx<DateTime?> birthDate = Rx<DateTime?>(null);
 
   ///邮箱控制器
   late TextEditingController emailController;
@@ -24,17 +27,20 @@ class RegisterLogic extends GetxController {
   ///手机号控制器
   late TextEditingController phoneController;
 
+  ///区域码控制器
+  late TextEditingController areaCodeController;
+
+  ///验证码控制器
+  late TextEditingController verificationCodeController;
+
+  ///邀请码控制器
+  late TextEditingController invitationCodeController;
+
   ///密码控制器
   late TextEditingController passwordController;
 
   ///昵称控制器
   late TextEditingController nicknameController;
-
-  ///头像地址
-  final RxString faceURL = "".obs;
-
-  ///性别：1男 2女 0未知
-  final RxInt gender = 0.obs;
 
   ///第1步表单Key
   final GlobalKey<FormState> step1FormKey = GlobalKey<FormState>();
@@ -48,12 +54,15 @@ class RegisterLogic extends GetxController {
     pageController = PageController();
     emailController = TextEditingController();
     phoneController = TextEditingController();
+    areaCodeController = TextEditingController(text: "+86");
     passwordController = TextEditingController();
     nicknameController = TextEditingController();
+    verificationCodeController = TextEditingController(text: "666666");
+    invitationCodeController = TextEditingController();
   }
 
   ///切换账号类型
-  void onAccountTypeChanged(String type) {
+  void onAccountTypeChanged(AccountType type) {
     accountType.value = type;
   }
 
@@ -82,21 +91,66 @@ class RegisterLogic extends GetxController {
     );
   }
 
+  Future<void> selectBirthDate(BuildContext context) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: birthDate.value ?? DateTime(now.year - 18, now.month, now.day),
+      firstDate: DateTime(1900),
+      lastDate: now,
+    );
+    if (picked != null) {
+      birthDate.value = picked;
+    }
+  }
+
+  void onGenderChanged(int value) => gender.value = value;
+
+  Future<void> requestVerifyCode() async {
+    final isEmail = accountType.value == AccountType.email;
+    final accountText = isEmail ? emailController.text.trim() : phoneController.text.trim();
+    if (accountText.isEmpty) {
+      warn(isEmail ? "请输入邮箱" : "请输入手机号");
+      return;
+    }
+    final repo = AppRepositoryImpl();
+    final resp = await repo.requestVerificationCode(
+      email: isEmail ? emailController.text.trim() : null,
+      areaCode: isEmail ? null : areaCodeController.text.trim(),
+      phoneNumber: isEmail ? null : phoneController.text.trim(),
+      usedFor: 1,
+      invitationCode: invitationCodeController.text.trim().isEmpty
+          ? null
+          : invitationCodeController.text.trim(),
+    );
+    resp.isSuccess ? info("验证码发送成功") : error(resp.toString());
+  }
+
   ///提交注册
   Future<void> submit() async {
+    FocusScope.of(Get.context!).unfocus();
     final state = step2FormKey.currentState;
     if (state != null && state.validate()) {
       final repo = AppRepositoryImpl();
-      final account = accountType.value == "email"
-          ? emailController.text.trim()
-          : phoneController.text.trim();
+      final deviceID = await StoreUtil.getOrCreateDeviceID();
+      final phoneAreaCode = areaCodeController.text.trim().isEmpty
+          ? "+86"
+          : areaCodeController.text.trim();
+
       final resp = await repo.register(
-        accountType: accountType.value,
-        account: account,
-        password: passwordController.text.trim(),
         nickname: nicknameController.text.trim(),
-        faceURL: faceURL.value.isNotEmpty ? faceURL.value : null,
+        password: passwordController.text.trim(),
+        areaCode: accountType.value == AccountType.phone ? phoneAreaCode : null,
+        phoneNumber: accountType.value == AccountType.phone ? phoneController.text.trim() : null,
+        email: accountType.value == AccountType.email ? emailController.text.trim() : null,
+        birth: birthDate.value?.millisecondsSinceEpoch ?? 0,
         gender: gender.value,
+        verificationCode: verificationCodeController.text.trim(),
+        invitationCode: invitationCodeController.text.trim().isEmpty
+            ? null
+            : invitationCodeController.text.trim(),
+        autoLogin: true,
+        deviceID: deviceID,
       );
       if (resp.isSuccess) {
         info(resp.toString());
@@ -118,8 +172,11 @@ class RegisterLogic extends GetxController {
     pageController.dispose();
     emailController.dispose();
     phoneController.dispose();
+    areaCodeController.dispose();
     passwordController.dispose();
     nicknameController.dispose();
+    verificationCodeController.dispose();
+    invitationCodeController.dispose();
     super.onClose();
   }
 }

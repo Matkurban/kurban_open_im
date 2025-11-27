@@ -14,7 +14,8 @@ class ConversationView extends GetView<ConversationLogic> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        leading: ConnectStatusWidget(),
+        leading: const ConnectStatusWidget(),
+        leadingWidth: 100.w,
         title: const Text("消息"),
         actions: [
           Obx(() {

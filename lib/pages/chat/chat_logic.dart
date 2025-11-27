@@ -15,7 +15,7 @@ import 'package:kurban_open_im/model/enum/chat_button_type.dart';
 import 'package:kurban_open_im/model/enum/panel_type.dart';
 import 'package:kurban_open_im/pages/chat/widgets/chat_card_picker_dialog.dart';
 import 'package:kurban_open_im/pages/chat/widgets/chat_location_picker_dialog.dart';
-import 'package:kurban_open_im/services/app_services.dart';
+import 'package:kurban_open_im/services/app_global_event.dart';
 import 'package:kurban_open_im/utils/app_util.dart';
 import 'package:kurban_open_im/utils/file_util.dart';
 import 'package:kurban_open_im/utils/permission_util.dart';
@@ -68,8 +68,6 @@ class ChatLogic extends GetxController {
 
   late ChatScrollObserver chatScrollObserver;
 
-  late final AppServices _appServices;
-
   final RxMap<String, int> sendingProgress = <String, int>{}.obs;
 
   late final StreamSubscription<Message> _newMessageSubscription;
@@ -81,7 +79,6 @@ class ChatLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _appServices = Get.find<AppServices>();
     inputController = TextEditingController();
     scrollController = ScrollController();
     chatListObserver = ListObserverController(controller: scrollController)
@@ -91,9 +88,9 @@ class ChatLogic extends GetxController {
       ..onHandlePositionResultCallback = _onHandlePositionResultCallback;
     scrollController.addListener(_scrollListen);
     inputController.addListener(_inputListen);
-    _newMessageSubscription = _appServices.onRecvNewMessage.listen(_onRecvNewMessage);
-    _messageRevokedSubscription = _appServices.onMessageRevoked.listen(_onMessageRevoked);
-    _sendProgressSubscription = _appServices.onMsgSendProgress.listen(_onMsgSendProgress);
+    _newMessageSubscription = AppGlobalEvent.onRecvNewMessage.listen(_onRecvNewMessage);
+    _messageRevokedSubscription = AppGlobalEvent.onMessageRevoked.listen(_onMessageRevoked);
+    _sendProgressSubscription = AppGlobalEvent.onMsgSendProgress.listen(_onMsgSendProgress);
     _loadMessages();
   }
 

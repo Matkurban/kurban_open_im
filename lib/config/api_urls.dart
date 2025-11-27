@@ -11,5 +11,5 @@ sealed class ApiUrls {
   static final register = "${AppConfig.appAuthUrl}/account/register";
 
   ///验证码（可选）
-  static final getVerifyCode = "${AppConfig.appAuthUrl}/account/verify_code";
+  static final getVerifyCode = "${AppConfig.appAuthUrl}/account/code/send";
 }
