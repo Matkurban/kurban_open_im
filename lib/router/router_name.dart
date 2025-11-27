@@ -17,4 +17,10 @@ sealed class RouterName {
   static String profile = "/profile";
 
   static String conversationDetail = "/conversationDetail";
+
+  static String friendSearch = "/friend_search";
+
+  static String friendApplications = "/friend_applications";
+
+  static String friendDetail = "/friend_detail";
 }

@@ -34,4 +34,12 @@ sealed class AppGlobalEvent {
 
   ///未读总数变化
   static var onTotalUnreadChanged = PublishSubject<int>();
+
+  ///好友相关事件
+  static var onFriendAdded = PublishSubject<FriendInfo>();
+  static var onFriendDeleted = PublishSubject<FriendInfo>();
+  static var onFriendInfoChanged = PublishSubject<FriendInfo>();
+  static var onFriendApplicationChanged = PublishSubject<FriendApplicationInfo>();
+  static var onBlacklistAdded = PublishSubject<BlacklistInfo>();
+  static var onBlacklistDeleted = PublishSubject<BlacklistInfo>();
 }

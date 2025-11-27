@@ -12,8 +12,18 @@ class FriendListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: AvatarView(url: user.faceURL, name: user.nickname ?? user.userID ?? ""),
+      leading: AvatarView(
+        url: user.faceURL,
+        name: user.nickname ?? user.userID ?? "",
+      ),
       title: Text(user.nickname ?? user.userID ?? ""),
+      subtitle: Text(user.remark ?? user.userID ?? ""),
+      trailing: IconButton(
+        icon: const Icon(Icons.info_outline),
+        onPressed: () {
+          Get.toNamed(RouterName.friendDetail, arguments: user);
+        },
+      ),
       onTap: () {
         Get.toNamed(
           RouterName.chat,

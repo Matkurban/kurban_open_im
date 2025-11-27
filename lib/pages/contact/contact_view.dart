@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:kurban_open_im/pages/contact/contact_logic.dart';
 import 'package:kurban_open_im/pages/contact/widgets/friend_list_item.dart';
 import 'package:kurban_open_im/pages/contact/widgets/group_list_item.dart';
+import 'package:kurban_open_im/router/router_name.dart';
 
 class ContactView extends GetView<ContactLogic> {
   const ContactView({super.key});
@@ -15,20 +16,13 @@ class ContactView extends GetView<ContactLogic> {
         appBar: AppBar(
           title: const Text("联系人"),
           actions: [
-            IconButton(onPressed: () => Get.toNamed('/friend_add'), icon: const Icon(Icons.person_add_alt_1)),
-            IconButton(onPressed: () => Get.toNamed('/friend_applications'), icon: const Icon(Icons.notifications)),
-            IconButton(onPressed: () => Get.toNamed('/blacklist'), icon: const Icon(Icons.block)),
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                if (v == 'group_create') Get.toNamed('/group_create');
-                if (v == 'group_search') Get.toNamed('/group_search');
-                if (v == 'group_applications') Get.toNamed('/group_applications');
-              },
-              itemBuilder: (ctx) => const [
-                PopupMenuItem(value: 'group_create', child: Text('创建群')),
-                PopupMenuItem(value: 'group_search', child: Text('搜索群')),
-                PopupMenuItem(value: 'group_applications', child: Text('入群申请')),
-              ],
+            IconButton(
+              onPressed: () => Get.toNamed(RouterName.friendSearch),
+              icon: const Icon(Icons.person_add_alt_1),
+            ),
+            IconButton(
+              onPressed: () => Get.toNamed(RouterName.friendApplications),
+              icon: const Icon(Icons.notifications_none),
             ),
           ],
           bottom: const TabBar(

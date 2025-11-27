@@ -64,6 +64,20 @@ class AppServices extends GetxService {
       ),
     );
 
+    OpenIM.iMManager.friendshipManager.setFriendshipListener(
+      OnFriendshipListener(
+        onFriendAdded: AppGlobalEvent.onFriendAdded.add,
+        onFriendDeleted: AppGlobalEvent.onFriendDeleted.add,
+        onFriendInfoChanged: AppGlobalEvent.onFriendInfoChanged.add,
+        onFriendApplicationAdded: AppGlobalEvent.onFriendApplicationChanged.add,
+        onFriendApplicationAccepted: AppGlobalEvent.onFriendApplicationChanged.add,
+        onFriendApplicationDeleted: AppGlobalEvent.onFriendApplicationChanged.add,
+        onFriendApplicationRejected: AppGlobalEvent.onFriendApplicationChanged.add,
+        onBlackAdded: AppGlobalEvent.onBlacklistAdded.add,
+        onBlackDeleted: AppGlobalEvent.onBlacklistDeleted.add,
+      ),
+    );
+
     if (initialized is bool) {
       return initialized;
     } else {
