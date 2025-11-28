@@ -24,9 +24,7 @@ class FriendSearchView extends GetView<FriendSearchLogic> {
                 Expanded(
                   child: Obx(
                     () => FilledButton(
-                      onPressed: controller.searching.value
-                          ? null
-                          : controller.search,
+                      onPressed: controller.searching.value ? null : controller.search,
                       child: Text(controller.searching.value ? "搜索中" : "搜索"),
                     ),
                   ),
@@ -49,11 +47,8 @@ class FriendSearchView extends GetView<FriendSearchLogic> {
                   separatorBuilder: (context, _) => const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final item = controller.results[index];
-                    final name =
-                        item.nickname ?? item.remark ?? item.userID ?? "";
-                    final disabled =
-                        controller.isAlreadyFriend(item) ||
-                        controller.isSelf(item);
+                    final name = item.nickname ?? item.remark ?? item.userID ?? "";
+                    final disabled = controller.isAlreadyFriend(item) || controller.isSelf(item);
                     return ListTile(
                       leading: AvatarView(url: item.faceURL, name: name),
                       title: Text(name),

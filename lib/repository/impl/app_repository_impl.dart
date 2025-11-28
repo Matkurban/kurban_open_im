@@ -26,7 +26,8 @@ class AppRepositoryImpl implements AppRepository {
     final response = await HttpClient().post(
       ApiUrls.loginByPhone,
       data: {
-        "phone": phone,
+        "areaCode": "+86",
+        "phoneNumber": phone,
         "password": AppUtil.generateMD5(password),
         "platform": ImPlatformType.current().value,
       },
